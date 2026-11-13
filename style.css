@@ -1,0 +1,105 @@
+/* ==========================================================================
+   WAKTU NANTI — CUSTOM EDITORIAL STYLESHEET
+   ========================================================================== */
+
+:root {
+  --bg-cream: #F9F8F6;
+  --text-charcoal: #1A1A1A;
+  --text-warmgray: #78736D;
+  --border-soft: #E6E4DF;
+  --bg-darkmodal: #141414;
+}
+
+html {
+  scroll-behavior: smooth;
+  background-color: var(--bg-cream);
+}
+
+/* Hilangkan scrollbar pada navigasi pill mobile & reels slider */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Style Tombol Filter Pill di Section 01 / Still Stories */
+.filter-pill {
+  background-color: #FFFFFF;
+  color: var(--text-warmgray);
+  border: 1px solid var(--border-soft);
+}
+
+.filter-pill:hover {
+  color: var(--text-charcoal);
+  border-color: #C9C5BD;
+}
+
+.filter-pill.active {
+  background-color: #1A1A1A;
+  color: #FFFFFF;
+  border-color: #1A1A1A;
+}
+
+/* Style Tombol Kategori di Navbar Atas */
+.nav-cat-btn.active {
+  background-color: #1A1A1A;
+  color: #FFFFFF !important;
+  border-color: #1A1A1A;
+}
+
+/* Masonry Card Item & Animasi Filter Halus */
+.masonry-item {
+  break-inside: avoid;
+  margin-bottom: 1.25rem;
+  transform-origin: center;
+  animation: fadeScaleIn 0.45s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@media (min-width: 640px) {
+  .masonry-item {
+    margin-bottom: 1.5rem;
+  }
+}
+
+@keyframes fadeScaleIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.96) translateY(8px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+/* Hover Zoom Lembut pada Kartu Foto */
+.photo-card-img {
+  transition: transform 0.65s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.group:hover .photo-card-img {
+  transform: scale(1.035);
+}
+
+/* Thumbnail Lightbox Kiri Bawah */
+.lb-thumb {
+  width: 52px;
+  height: 66px;
+  object-fit: cover;
+  opacity: 0.45;
+  border: 1.5px solid transparent;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.lb-thumb:hover {
+  opacity: 0.8;
+}
+
+.lb-thumb.active {
+  opacity: 1;
+  border-color: #FFFFFF;
+}
