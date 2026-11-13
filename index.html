@@ -18,10 +18,10 @@
       theme: {
         extend: {
           colors: {
-            cream: '#F7F5F0',
+            cream: '#F4EFE6',
             charcoal: '#161616',
-            warmgray: '#6E6A63',
-            softborder: '#E2DFD7',
+            warmgray: '#5E5952',
+            softborder: '#DCD5C9',
             darkmodal: '#121212'
           },
           fontFamily: {
@@ -41,28 +41,28 @@
   <!-- Tekstur Film Grain Analog Halus -->
   <div class="film-grain pointer-events-none fixed inset-0 z-30" aria-hidden="true"></div>
 
-  <!-- Background Mesh Gradient (Warm Cream Silk & Monochrome Mist) -->
+  <!-- Background Mesh Gradient (Warm Champagne Silk + Monochrome Charcoal Mist) -->
   <div class="ambient-bg fixed inset-0 -z-10 pointer-events-none" aria-hidden="true">
     <div class="mesh-orb orb-cream-1"></div>
-    <div class="mesh-orb orb-cream-2"></div>
+    <div class="mesh-orb orb-sand-2"></div>
     <div class="mesh-orb orb-mono-1"></div>
     <div class="mesh-orb orb-mono-2"></div>
   </div>
 
   <!-- ==================== 1. NAVBAR / HEADER ATAS ==================== -->
-  <header class="sticky top-0 z-40 bg-[#F7F5F0]/85 backdrop-blur-xl border-b border-black/[0.06] transition-all duration-300" id="main-navbar">
+  <header class="sticky top-0 z-40 bg-[#F6F2EA]/75 backdrop-blur-xl border-b border-black/[0.07] transition-all duration-300" id="main-navbar">
     <div class="max-w-7xl mx-auto px-4 sm:px-8 lg:px-14 h-16 sm:h-20 flex items-center justify-between gap-3">
       
       <!-- Kiri: Logo Serif "Waktu Nanti" -->
       <a href="#top" id="nav-logo" class="font-serif text-2xl sm:text-[29px] tracking-tight text-charcoal hover:opacity-75 transition-opacity shrink-0 flex items-center gap-2.5">
         <span>Waktu Nanti</span>
-        <span class="hidden sm:inline-block text-[9px] font-sans uppercase tracking-[0.25em] text-warmgray border border-black/15 px-2 py-0.5 rounded-full">
+        <span class="hidden sm:inline-block text-[9px] font-sans uppercase tracking-[0.25em] text-warmgray border border-black/15 bg-white/50 px-2 py-0.5 rounded-full">
           Est. Malang
         </span>
       </a>
 
       <!-- Tengah: Menu Navigasi Kategori Cepat (Desktop) -->
-      <nav class="hidden md:flex items-center gap-1 bg-white/65 backdrop-blur-md border border-black/10 rounded-full px-2 py-1 shadow-2xs" aria-label="Navigasi Kategori">
+      <nav class="hidden md:flex items-center gap-1 bg-white/60 backdrop-blur-md border border-black/10 rounded-full px-2 py-1 shadow-2xs" aria-label="Navigasi Kategori">
         <button type="button" data-nav-filter="All" class="nav-cat-btn active px-4 py-1.5 rounded-full text-xs font-medium transition-all cursor-pointer">
           All
         </button>
@@ -78,7 +78,7 @@
         <span class="h-3.5 w-[1px] bg-black/10 mx-1"></span>
         <button type="button" id="nav-video-btn" class="px-4 py-1.5 rounded-full text-xs font-medium text-warmgray hover:text-charcoal transition-all flex items-center gap-1.5 cursor-pointer">
           <span class="w-1.5 h-1.5 rounded-full bg-charcoal animate-pulse"></span>
-          Video Reels
+          Films &amp; Video
         </button>
       </nav>
 
@@ -99,32 +99,32 @@
     </div>
 
     <!-- Menu Navigasi Kategori Mobile -->
-    <div class="md:hidden border-t border-black/[0.06] bg-[#F7F5F0]/95 px-4 py-2 overflow-x-auto no-scrollbar flex items-center gap-1.5">
+    <div class="md:hidden border-t border-black/[0.06] bg-[#F6F2EA]/90 px-4 py-2 overflow-x-auto no-scrollbar flex items-center gap-1.5">
       <button type="button" data-nav-filter="All" class="nav-cat-btn active shrink-0 px-3.5 py-1 rounded-full text-xs font-medium transition-all">
         All
       </button>
-      <button type="button" data-nav-filter="Wisuda" class="nav-cat-btn shrink-0 px-3.5 py-1 rounded-full text-xs font-medium text-warmgray bg-white/80 border border-black/10 transition-all">
+      <button type="button" data-nav-filter="Wisuda" class="nav-cat-btn shrink-0 px-3.5 py-1 rounded-full text-xs font-medium text-warmgray bg-white/75 border border-black/10 transition-all">
         Wisuda
       </button>
-      <button type="button" data-nav-filter="Group Shoot" class="nav-cat-btn shrink-0 px-3.5 py-1 rounded-full text-xs font-medium text-warmgray bg-white/80 border border-black/10 transition-all">
+      <button type="button" data-nav-filter="Group Shoot" class="nav-cat-btn shrink-0 px-3.5 py-1 rounded-full text-xs font-medium text-warmgray bg-white/75 border border-black/10 transition-all">
         Group Shoot
       </button>
-      <button type="button" data-nav-filter="Pre-wedding" class="nav-cat-btn shrink-0 px-3.5 py-1 rounded-full text-xs font-medium text-warmgray bg-white/80 border border-black/10 transition-all">
+      <button type="button" data-nav-filter="Pre-wedding" class="nav-cat-btn shrink-0 px-3.5 py-1 rounded-full text-xs font-medium text-warmgray bg-white/75 border border-black/10 transition-all">
         Pre-wedding
       </button>
-      <button type="button" id="nav-video-btn-mobile" class="shrink-0 px-3.5 py-1 rounded-full text-xs font-medium text-charcoal bg-white/80 border border-black/10 flex items-center gap-1.5 transition-all">
+      <button type="button" id="nav-video-btn-mobile" class="shrink-0 px-3.5 py-1 rounded-full text-xs font-medium text-charcoal bg-white/75 border border-black/10 flex items-center gap-1.5 transition-all">
         <span class="w-1.5 h-1.5 rounded-full bg-charcoal"></span>
-        Video Reels
+        Films &amp; Video
       </button>
     </div>
   </header>
 
-  <!-- ==================== 2. HERO SECTION (RINGKAS & LANGSUNG KE GALERI) ==================== -->
+  <!-- ==================== 2. HERO SECTION ==================== -->
   <section class="relative pt-7 pb-8 sm:pt-14 sm:pb-12 px-4 sm:px-10 max-w-4xl mx-auto text-center">
     <!-- Tagline Atas -->
-    <div class="reveal-on-scroll inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-white/60 backdrop-blur-md border border-black/10 mb-4 sm:mb-6 shadow-2xs">
+    <div class="reveal-on-scroll inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-white/65 backdrop-blur-md border border-black/10 mb-4 sm:mb-6 shadow-2xs">
       <span class="w-1.5 h-1.5 rounded-full bg-charcoal"></span>
-      <p class="text-[9px] sm:text-[11px] tracking-[0.22em] uppercase text-charcoal/80 font-medium">
+      <p class="text-[9px] sm:text-[11px] tracking-[0.22em] uppercase text-charcoal/85 font-medium">
         PHOTOGRAPHY &amp; VIDEOGRAPHY &nbsp;/&nbsp; MALANG, INDONESIA
       </p>
     </div>
@@ -160,11 +160,11 @@
       <button type="button" data-hero-filter="Wisuda" class="hover:text-charcoal hover:underline underline-offset-4 transition-colors cursor-pointer">
         WISUDA
       </button>
-      <span class="text-black/20 select-none">/</span>
+      <span class="text-black/25 select-none">/</span>
       <button type="button" data-hero-filter="Group Shoot" class="hover:text-charcoal hover:underline underline-offset-4 transition-colors cursor-pointer">
         GROUP SHOOT
       </button>
-      <span class="text-black/20 select-none">/</span>
+      <span class="text-black/25 select-none">/</span>
       <button type="button" data-hero-filter="Pre-wedding" class="hover:text-charcoal hover:underline underline-offset-4 transition-colors cursor-pointer">
         PRE-WEDDING
       </button>
@@ -172,22 +172,22 @@
   </section>
 
   <!-- Pita Editorial Marquee Tipis -->
-  <div class="border-y border-black/10 bg-white/40 backdrop-blur-xs py-2 overflow-hidden select-none">
+  <div class="border-y border-black/10 bg-white/45 backdrop-blur-xs py-2 overflow-hidden select-none">
     <div class="marquee-track flex items-center gap-8 whitespace-nowrap text-[9px] sm:text-[10px] tracking-[0.25em] uppercase text-warmgray font-medium">
       <span>✦ STILL &amp; MOTION STORIES</span>
       <span>✦ GRADUATION PORTRAIT</span>
       <span>✦ GROUP SHOOT &amp; PRE-SUMPAH</span>
-      <span>✦ INTIMATE PRE-WEDDING</span>
+      <span>✦ INTIMATE PRE-WEDDING &amp; WEDDING FILM</span>
       <span>✦ MALANG, INDONESIA</span>
       <span>✦ STILL &amp; MOTION STORIES</span>
       <span>✦ GRADUATION PORTRAIT</span>
       <span>✦ GROUP SHOOT &amp; PRE-SUMPAH</span>
-      <span>✦ INTIMATE PRE-WEDDING</span>
+      <span>✦ INTIMATE PRE-WEDDING &amp; WEDDING FILM</span>
       <span>✦ MALANG, INDONESIA</span>
     </div>
   </div>
 
-  <!-- ==================== 3. SECTION 01 / STILL STORIES (GALERI POLAROID RAPAT & RAPI) ==================== -->
+  <!-- ==================== 3. SECTION 01 / STILL STORIES (GALERI POLAROID RAPAT) ==================== -->
   <section id="still-stories" class="max-w-7xl mx-auto px-3 sm:px-8 lg:px-14 pt-8 pb-20 scroll-mt-20">
     <!-- Header Galeri -->
     <div class="reveal-on-scroll flex flex-col lg:flex-row lg:items-end justify-between mb-6 sm:mb-8 gap-4 border-b border-black/10 pb-4 sm:pb-6 px-1">
@@ -196,7 +196,7 @@
           <span class="text-[10px] tracking-[0.22em] uppercase text-warmgray font-semibold">
             01 / STILL STORIES
           </span>
-          <span class="h-[1px] w-6 bg-black/20"></span>
+          <span class="h-[1px] w-6 bg-black/25"></span>
           <span class="font-serif italic text-xs sm:text-sm text-warmgray">Selected Archives</span>
         </div>
         <h2 class="font-serif text-3xl sm:text-5xl text-charcoal leading-tight font-normal">
@@ -239,7 +239,7 @@
       <span id="cms-status-text">Menyinkronkan portofolio terbaru...</span>
     </div>
 
-    <!-- Grid Foto Polaroid (Jarak Dempet & Sejajar Rata Atas di HP maupun Laptop) -->
+    <!-- Grid Foto Polaroid -->
     <div id="photo-masonry-grid" class="masonry-grid columns-2 md:columns-3 lg:columns-4 gap-2.5 sm:gap-4">
       <!-- Diisi secara dinamis oleh script.js -->
     </div>
@@ -253,7 +253,7 @@
     </div>
   </section>
 
-  <!-- ==================== 5. SECTION 02 / MOTION STORIES ==================== -->
+  <!-- ==================== 5. SECTION 02 / MOTION STORIES (SUPPORT LANDSCAPE 16:9 & PORTRAIT 9:16) ==================== -->
   <section id="motion-stories" class="monochrome-noir-section text-white py-20 scroll-mt-16 relative overflow-hidden">
     <div class="max-w-7xl mx-auto px-4 sm:px-8 lg:px-14 relative z-10">
       <div class="reveal-on-scroll flex flex-col sm:flex-row sm:items-end justify-between mb-10 gap-4 border-b border-white/15 pb-6">
@@ -263,40 +263,26 @@
               02 / MOTION STORIES
             </span>
             <span class="h-[1px] w-8 bg-white/25"></span>
-            <span class="font-serif italic text-sm text-neutral-300">9:16 Vertical Cinema</span>
+            <span class="font-serif italic text-sm text-neutral-300">Cinema &amp; Motion Archive</span>
           </div>
           <h2 class="font-serif text-3xl sm:text-5xl text-white leading-tight font-normal">
             Potret yang bergerak, <span class="italic text-neutral-400">rasa yang menetap.</span>
           </h2>
         </div>
 
-        <div class="flex items-center gap-2 self-end">
-          <button
-            type="button"
-            id="reels-prev-btn"
-            aria-label="Geser video ke kiri"
-            class="w-10 h-10 rounded-full border border-white/20 bg-white/5 hover:bg-white hover:text-charcoal text-white flex items-center justify-center transition-colors cursor-pointer"
-          >
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
-            </svg>
-          </button>
-          <button
-            type="button"
-            id="reels-next-btn"
-            aria-label="Geser video ke kanan"
-            class="w-10 h-10 rounded-full border border-white/20 bg-white/5 hover:bg-white hover:text-charcoal text-white flex items-center justify-center transition-colors cursor-pointer"
-          >
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
-            </svg>
-          </button>
+        <!-- Filter Format Video (Semua / Landscape / Portrait) -->
+        <div class="flex items-center gap-2 self-start sm:self-end">
+          <span class="text-[11px] text-neutral-400 hidden sm:inline">Format:</span>
+          <span class="text-[10px] uppercase tracking-widest px-3 py-1.5 rounded-full bg-white/10 border border-white/15 text-neutral-200">
+            Landscape &amp; Portrait Films
+          </span>
         </div>
       </div>
 
+      <!-- Grid Dinamis Video (Mendukung Kartu Lebar Landscape 16:9 & Kartu Vertikal Portrait 9:16) -->
       <div
         id="video-reels-container"
-        class="reveal-on-scroll flex lg:grid lg:grid-cols-4 gap-4 sm:gap-5 overflow-x-auto lg:overflow-visible snap-x snap-mandatory pb-4 no-scrollbar"
+        class="reveal-on-scroll grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5 items-start"
       >
         <!-- Diisi otomatis oleh script.js -->
       </div>
@@ -354,37 +340,59 @@
     </div>
   </footer>
 
-  <!-- ==================== 4. MODAL LIGHTBOX SLIDER INTERAKTIF ==================== -->
+  <!-- ==================== 4. MODAL LIGHTBOX (FROSTED GLASS + DYNAMIC AMBIENT GLOW) ==================== -->
   <div
     id="lightbox-modal"
-    class="fixed inset-0 z-50 hidden bg-darkmodal text-white flex-col justify-between select-none"
+    class="fixed inset-0 z-50 hidden text-white flex-col justify-between select-none lightbox-glass-backdrop"
     role="dialog"
     aria-modal="true"
     aria-label="Galeri Lightbox Waktu Nanti"
   >
-    <div class="bg-[#F7F5F0] text-charcoal px-4 sm:px-10 lg:px-16 h-16 sm:h-20 flex items-center justify-between shrink-0 border-b border-black/10">
-      <button type="button" id="lightbox-brand-close" class="font-serif text-2xl sm:text-[28px] tracking-tight text-charcoal hover:opacity-75 transition-opacity cursor-pointer">
-        Waktu Nanti
-      </button>
+    <!-- Layer Bias Cahaya Dinamis dari Foto yang Sedang Dibuka -->
+    <div class="pointer-events-none absolute inset-0 overflow-hidden z-0" aria-hidden="true">
+      <img
+        id="lightbox-ambient-bg"
+        src=""
+        alt=""
+        class="w-full h-full object-cover scale-125 blur-[80px] opacity-40 transition-all duration-700"
+      />
+      <div class="absolute inset-0 bg-gradient-to-b from-black/60 via-black/45 to-black/75"></div>
+    </div>
 
-      <div class="flex items-center gap-2.5 sm:gap-3">
+    <!-- Top Bar Lightbox (Menyatu Transparan / Glassmorphism) -->
+    <div class="relative z-20 bg-white/[0.06] backdrop-blur-xl px-4 sm:px-10 lg:px-16 h-16 sm:h-20 flex items-center justify-between shrink-0 border-b border-white/10">
+      <div class="flex items-center gap-3 min-w-0">
+        <button type="button" id="lightbox-brand-close" class="font-serif text-2xl sm:text-[28px] tracking-tight text-white hover:opacity-75 transition-opacity cursor-pointer shrink-0">
+          Waktu Nanti
+        </button>
+        <span class="hidden sm:inline-block text-white/25">|</span>
+        <p id="lightbox-meta" class="hidden sm:block text-xs text-white/80 tracking-wide font-normal truncate">
+          Wisuda — Universitas Brawijaya — 1 Foto
+        </p>
+      </div>
+
+      <div class="flex items-center gap-2.5 sm:gap-3 shrink-0">
+        <span id="lightbox-counter" class="text-xs text-white/80 bg-white/10 border border-white/15 px-3 py-1 rounded-full font-mono">
+          1 / 1
+        </span>
+
         <a
           href="https://wa.me/6287796487390?text=Halo%20Waktu%20Nanti%2C%20saya%20tertarik%20untuk%20tanya%20paket%20foto%2Fvideo..."
           target="_blank"
           rel="noopener noreferrer"
-          class="inline-flex items-center gap-2 bg-charcoal hover:bg-black text-white text-xs sm:text-sm font-medium px-3.5 sm:px-5 py-2 rounded-full transition-all"
+          class="inline-flex items-center gap-2 bg-white text-charcoal hover:bg-neutral-200 text-xs sm:text-sm font-medium px-3.5 sm:px-5 py-2 rounded-full transition-all shadow-sm"
         >
           <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24">
             <path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.582 2.128 2.182-.573c.978.58 1.911.928 3.145.929 3.178 0 5.767-2.587 5.768-5.766.001-3.187-2.575-5.77-5.764-5.771zm3.392 8.244c-.144.405-.837.774-1.17.824-.299.045-.677.063-1.092-.069-.252-.08-.575-.187-.988-.365-1.739-.751-2.874-2.502-2.961-2.617-.087-.116-.708-.94-.708-1.793s.448-1.273.607-1.446c.159-.173.346-.217.462-.217l.332.006c.106.005.249-.04.39.298.144.347.491 1.2.534 1.287.043.087.072.188.014.304-.058.116-.087.188-.173.289l-.26.304c-.087.086-.177.18-.076.354.101.174.449.741.964 1.201.662.591 1.221.774 1.394.86s.274.072.376-.043c.101-.116.433-.506.549-.68.116-.173.231-.145.39-.087s1.011.477 1.184.564.289.13.332.202c.045.072.045.419-.1.824zm-3.423-14.416c-6.627 0-12 5.373-12 12 0 2.126.556 4.124 1.531 5.862l-1.531 5.638 5.792-1.519c1.694.906 3.627 1.419 5.683 1.419 6.627 0 12-5.373 12-12s-5.373-12-11.475-11.4z"/>
           </svg>
-          <span>Hubungi Kami</span>
+          <span class="hidden sm:inline">Hubungi Kami</span>
         </a>
 
         <button
           type="button"
           id="lightbox-close-btn"
           aria-label="Tutup Lightbox"
-          class="w-9 h-9 rounded-full bg-charcoal/10 hover:bg-charcoal hover:text-white text-charcoal flex items-center justify-center transition-colors cursor-pointer"
+          class="w-9 h-9 rounded-full bg-white/15 hover:bg-white hover:text-charcoal text-white border border-white/20 flex items-center justify-center transition-colors cursor-pointer"
           title="Tutup (Esc)"
         >
           <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -394,20 +402,22 @@
       </div>
     </div>
 
-    <div class="relative flex-1 flex flex-col justify-between px-4 sm:px-8 py-4 overflow-hidden" id="lightbox-touch-area">
-      <div class="flex items-center justify-between z-20">
-        <p id="lightbox-meta" class="text-[11px] sm:text-xs text-neutral-300 tracking-wide font-normal truncate pr-3">
-          Wisuda — Universitas Brawijaya — 1 Foto
+    <!-- Area Tengah & Bawah Lightbox -->
+    <div class="relative z-10 flex-1 flex flex-col justify-between px-4 sm:px-8 py-3 overflow-hidden" id="lightbox-touch-area">
+      <!-- Info Metadata Khusus Mobile -->
+      <div class="sm:hidden flex items-center justify-between z-20 pb-1">
+        <p id="lightbox-meta-mobile" class="text-[11px] text-white/85 tracking-wide font-normal truncate">
+          Wisuda — Universitas Brawijaya
         </p>
-        <span id="lightbox-counter" class="text-[11px] text-neutral-400 font-mono shrink-0">1 / 1</span>
       </div>
 
-      <div class="relative flex-1 flex items-center justify-center my-2 min-h-0">
+      <!-- Foto Utama + Tombol Panah Kiri/Kanan Glass -->
+      <div class="relative flex-1 flex items-center justify-center my-1 min-h-0" id="lightbox-backdrop-click">
         <button
           type="button"
           id="lightbox-prev"
           aria-label="Foto Sebelumnya"
-          class="absolute left-0 sm:left-4 z-20 w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-white/10 hover:bg-white/25 text-white flex items-center justify-center backdrop-blur-xs transition-all cursor-pointer"
+          class="absolute left-1 sm:left-4 z-20 w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-black/35 hover:bg-white hover:text-charcoal text-white border border-white/20 flex items-center justify-center backdrop-blur-md transition-all cursor-pointer shadow-lg"
         >
           <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
@@ -418,14 +428,14 @@
           id="lightbox-main-img"
           src=""
           alt="Preview Foto Waktu Nanti"
-          class="max-h-[58vh] sm:max-h-[64vh] max-w-full object-contain shadow-2xl transition-all duration-300"
+          class="max-h-[60vh] sm:max-h-[66vh] max-w-full object-contain rounded-xs shadow-[0_25px_70px_rgba(0,0,0,0.65)] border border-white/15 transition-all duration-300"
         />
 
         <button
           type="button"
           id="lightbox-next"
           aria-label="Foto Selanjutnya"
-          class="absolute right-0 sm:right-4 z-20 w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-white/10 hover:bg-white/25 text-white flex items-center justify-center backdrop-blur-xs transition-all cursor-pointer"
+          class="absolute right-1 sm:right-4 z-20 w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-black/35 hover:bg-white hover:text-charcoal text-white border border-white/20 flex items-center justify-center backdrop-blur-md transition-all cursor-pointer shadow-lg"
         >
           <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
@@ -433,16 +443,19 @@
         </button>
       </div>
 
-      <div class="z-20 pt-2">
-        <div id="lightbox-thumbnails" class="flex items-center gap-2 overflow-x-auto pb-3 no-scrollbar">
-          <!-- Diisi otomatis oleh script.js -->
-        </div>
+      <!-- Dock Thumbnail Bawah dengan Latar Kaca Transparan -->
+      <div class="z-20 pt-2 max-w-5xl w-full mx-auto">
+        <div class="bg-black/35 backdrop-blur-xl border border-white/10 rounded-xl px-3 pt-2.5 pb-2 shadow-xl">
+          <div id="lightbox-thumbnails" class="flex items-center gap-2 overflow-x-auto pb-2 no-scrollbar">
+            <!-- Diisi otomatis oleh script.js -->
+          </div>
 
-        <div class="border-t border-white/10 pt-2.5 flex items-center justify-between text-[11px] text-neutral-400">
-          <div id="lightbox-drive-info" class="truncate pr-2"></div>
-          <button type="button" id="lightbox-back-gallery" class="text-neutral-300 hover:text-white transition-colors cursor-pointer shrink-0">
-            Tutup Galeri (Esc)
-          </button>
+          <div class="border-t border-white/10 pt-1.5 flex items-center justify-between text-[10px] sm:text-[11px] text-white/70">
+            <div id="lightbox-drive-info" class="truncate pr-2"></div>
+            <button type="button" id="lightbox-back-gallery" class="text-white/80 hover:text-white transition-colors cursor-pointer shrink-0">
+              Tutup Galeri (Esc)
+            </button>
+          </div>
         </div>
       </div>
     </div>
