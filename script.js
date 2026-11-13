@@ -76,17 +76,15 @@ let allPhotos = [...FALLBACK_PHOTOS];
 let allVideos = [...FALLBACK_VIDEOS];
 let activeCategory = 'All';
 
-// State khusus Lightbox untuk 1 sesi klien yang sedang dibuka
 let currentClientSession = null;
 let currentLightboxList = [];
 let currentLightboxIndex = 0;
 
-// Observer untuk animasi Smooth Scroll Reveal
 let scrollRevealObserver = null;
 
 /**
  * ============================================================================
- * 1. SMOOTH SCROLL REVEAL ENGINE (INTERSECTION OBSERVER)
+ * 1. SMOOTH SCROLL REVEAL ENGINE
  * ============================================================================
  */
 function initScrollReveal() {
@@ -106,8 +104,8 @@ function initScrollReveal() {
         });
       },
       {
-        threshold: 0.1,
-        rootMargin: '0px 0px -40px 0px'
+        threshold: 0.08,
+        rootMargin: '0px 0px -24px 0px'
       }
     );
   }
@@ -393,7 +391,7 @@ async function loadPortfolioFromGoogleSheets() {
 
 /**
  * ============================================================================
- * 4. RENDER GALERI FOTO MASONRY (FINE-ART EXHIBITION STYLE + SCROLL REVEAL)
+ * 4. RENDER GALERI POLAROID (RAPAT, SEJAJAR, DAN JUDUL UTUH DI HP)
  * ============================================================================
  */
 function renderPhotoGallery() {
@@ -420,8 +418,8 @@ function renderPhotoGallery() {
 
     const figure = document.createElement('figure');
     figure.className =
-      'masonry-item reveal-on-scroll group relative bg-white/75 backdrop-blur-xs p-2 sm:p-3 border border-black/10 rounded-xs shadow-2xs hover:shadow-xl transition-all duration-500 cursor-pointer';
-    figure.style.transitionDelay = `${(idx % 4) * 75}ms`;
+      'masonry-item reveal-on-scroll group relative bg-white/85 backdrop-blur-xs p-1.5 sm:p-2.5 border border-black/10 rounded-xs shadow-2xs hover:shadow-xl transition-all duration-500 cursor-pointer';
+    figure.style.transitionDelay = `${(idx % 4) * 60}ms`;
     figure.setAttribute('tabindex', '0');
     figure.setAttribute('role', 'button');
     figure.setAttribute('aria-label', `${sessionItem.category} - ${sessionItem.title}`);
@@ -435,29 +433,27 @@ function renderPhotoGallery() {
           onerror="this.onerror=null;this.src='https://framerusercontent.com/images/4QgnUdMDiSDZJS65ZAaDyM9Wdc.png';"
           class="photo-card-img w-full h-auto object-cover block"
         />
-        <span class="absolute top-3 right-3 bg-black/65 backdrop-blur-md text-white text-[10px] tracking-wider uppercase font-medium px-2.5 py-1 rounded-full border border-white/15">
+        <span class="absolute top-2 right-2 sm:top-2.5 sm:right-2.5 bg-black/65 backdrop-blur-md text-white text-[9px] sm:text-[10px] tracking-wider uppercase font-medium px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-full border border-white/15">
           ${photoCount} Foto
         </span>
 
-        <!-- Hover Glass Badge -->
-        <div class="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
-          <span class="bg-white/90 backdrop-blur-md text-charcoal text-[11px] font-medium tracking-wider uppercase px-4 py-2 rounded-full shadow-lg transform translate-y-2 group-hover:translate-y-0 transition-transform duration-300">
+        <!-- Hover Glass Badge (Tampil saat disentuh/hover) -->
+        <div class="absolute inset-0 bg-black/25 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+          <span class="bg-white/90 backdrop-blur-md text-charcoal text-[10px] sm:text-[11px] font-medium tracking-wider uppercase px-3.5 py-1.5 rounded-full shadow-lg transform translate-y-2 group-hover:translate-y-0 transition-transform duration-300">
             Lihat Album ↗
           </span>
         </div>
       </div>
 
-      <!-- Fine-Art Exhibition Caption di Bawah Foto -->
-      <figcaption class="pt-3 pb-1 px-1 flex items-baseline justify-between gap-2 border-t border-black/[0.06] mt-2">
-        <div class="min-w-0">
-          <p class="text-[9px] sm:text-[10px] uppercase tracking-[0.2em] text-warmgray truncate">
-            ${sessionItem.category}
-          </p>
-          <h3 class="font-serif text-base sm:text-xl text-charcoal leading-snug truncate group-hover:italic transition-all">
-            ${sessionItem.title}
-          </h3>
+      <!-- Polaroid Caption: Kategori & Nomor di Atas, Judul Klien Utuh di Bawah -->
+      <figcaption class="pt-2 pb-0.5 px-1">
+        <div class="flex items-center justify-between gap-1 text-[8px] sm:text-[10px] uppercase tracking-[0.16em] text-warmgray mb-0.5">
+          <span class="truncate">${sessionItem.category}</span>
+          <span class="font-mono text-warmgray/65 shrink-0">NO.${indexNumber}</span>
         </div>
-        <span class="font-mono text-[10px] text-warmgray/70 shrink-0">NO.${indexNumber}</span>
+        <h3 class="font-serif text-[15px] sm:text-lg text-charcoal leading-snug line-clamp-2 group-hover:italic transition-all">
+          ${sessionItem.title}
+        </h3>
       </figcaption>
     `;
 
@@ -472,7 +468,6 @@ function renderPhotoGallery() {
     grid.appendChild(figure);
   });
 
-  // Aktifkan animasi Smooth Scroll Reveal pada kartu-kartu baru
   initScrollReveal();
 }
 
@@ -616,7 +611,7 @@ function renderVideoReels() {
   allVideos.forEach((vid) => {
     const card = document.createElement('div');
     card.className =
-      'relative shrink-0 w-[76vw] sm:w-[280px] lg:w-auto aspect-[9/16] bg-neutral-900 rounded-xs overflow-hidden snap-center group border border-white/15 shadow-2xl';
+      'relative shrink-0 w-[74vw] sm:w-[270px] lg:w-auto aspect-[9/16] bg-neutral-900 rounded-xs overflow-hidden snap-center group border border-white/15 shadow-2xl';
 
     const isGoogleDriveVideo = vid.videoUrl && vid.videoUrl.includes('drive.google.com');
     const previewUrl = formatDriveVideoPreviewUrl(vid.videoUrl);
@@ -693,35 +688,30 @@ document.addEventListener('DOMContentLoaded', () => {
   renderVideoReels();
   loadPortfolioFromGoogleSheets();
 
-  // Navigasi Kategori Navbar
   document.querySelectorAll('[data-nav-filter]').forEach((btn) => {
     btn.addEventListener('click', () => {
       setCategoryFilter(btn.getAttribute('data-nav-filter'), true);
     });
   });
 
-  // Navigasi ke Video Reels
   const scrollToVideoReels = () => {
     document.getElementById('motion-stories')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   };
   document.getElementById('nav-video-btn')?.addEventListener('click', scrollToVideoReels);
   document.getElementById('nav-video-btn-mobile')?.addEventListener('click', scrollToVideoReels);
 
-  // Klik Teks Kategori & Kartu Triptych di Hero
   document.querySelectorAll('[data-hero-filter]').forEach((btn) => {
     btn.addEventListener('click', () => {
       setCategoryFilter(btn.getAttribute('data-hero-filter'), true);
     });
   });
 
-  // Klik Filter Tab Pills di Galeri
   document.querySelectorAll('[data-filter]').forEach((btn) => {
     btn.addEventListener('click', () => {
       setCategoryFilter(btn.getAttribute('data-filter'), false);
     });
   });
 
-  // Toggle Mode BW (Black & White Darkroom)
   const bwToggleBtn = document.getElementById('bw-mode-toggle');
   const bwLabel = document.getElementById('bw-mode-label');
   bwToggleBtn?.addEventListener('click', () => {
@@ -734,7 +724,6 @@ document.addEventListener('DOMContentLoaded', () => {
     bwToggleBtn.classList.toggle('bg-white/80', !isBw);
   });
 
-  // Slider Video Reels
   const reelsContainer = document.getElementById('video-reels-container');
   document.getElementById('reels-prev-btn')?.addEventListener('click', () => {
     reelsContainer?.scrollBy({ left: -300, behavior: 'smooth' });
@@ -743,12 +732,10 @@ document.addEventListener('DOMContentLoaded', () => {
     reelsContainer?.scrollBy({ left: 300, behavior: 'smooth' });
   });
 
-  // Back to Top
   document.getElementById('back-to-top-btn')?.addEventListener('click', () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   });
 
-  // Kontrol Lightbox
   document.getElementById('lightbox-close-btn')?.addEventListener('click', closeLightbox);
   document.getElementById('lightbox-brand-close')?.addEventListener('click', closeLightbox);
   document.getElementById('lightbox-back-gallery')?.addEventListener('click', closeLightbox);
