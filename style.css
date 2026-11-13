@@ -1,18 +1,155 @@
 /* ==========================================================================
-   WAKTU NANTI — CUSTOM EDITORIAL STYLESHEET
+   WAKTU NANTI — WARM CREAM SILK & MONOCHROME NOIR EDITORIAL STYLESHEET
    ========================================================================== */
 
 :root {
-  --bg-cream: #F9F8F6;
-  --text-charcoal: #1A1A1A;
-  --text-warmgray: #78736D;
-  --border-soft: #E6E4DF;
-  --bg-darkmodal: #141414;
+  --bg-cream: #F7F5F0;
+  --text-charcoal: #161616;
+  --text-warmgray: #6E6A63;
+  --border-soft: #E2DFD7;
 }
 
 html {
   scroll-behavior: smooth;
   background-color: var(--bg-cream);
+}
+
+/* 1. LAYER BACKGROUND MESH GRADIENT (WARM CREAM + MONOCHROME MIST) */
+.ambient-bg {
+  background:
+    radial-gradient(120% 90% at 15% 10%, #FAF8F5 0%, rgba(247, 245, 240, 0.85) 45%, transparent 100%),
+    radial-gradient(100% 90% at 88% 18%, #E6E2DA 0%, transparent 65%),
+    radial-gradient(90% 80% at 50% 55%, #EFECE4 0%, #F7F5F0 70%),
+    linear-gradient(160deg, #FBF9F5 0%, #EAE6DE 48%, #DFDDD7 100%);
+  overflow: hidden;
+}
+
+.mesh-orb {
+  position: absolute;
+  border-radius: 9999px;
+  filter: blur(85px);
+  opacity: 0.65;
+  will-change: transform;
+  animation: silkFloat 22s ease-in-out infinite alternate;
+}
+
+/* Gelombang Cream Hangat (Seperti Gambar Referensi 1) */
+.orb-cream-1 {
+  width: 58vw;
+  height: 58vw;
+  top: -12%;
+  left: -10%;
+  background: radial-gradient(circle, #FFFDF9 0%, #E8E1D3 65%, transparent 100%);
+}
+
+.orb-cream-2 {
+  width: 50vw;
+  height: 50vw;
+  top: 28%;
+  right: -12%;
+  background: radial-gradient(circle, #F5EFE4 0%, #DDD5C7 70%, transparent 100%);
+  animation-delay: -7s;
+}
+
+/* Sentuhan Monochrome Silver/Charcoal Mist Halus (Seperti Gambar Referensi 3) */
+.orb-mono-1 {
+  width: 42vw;
+  height: 42vw;
+  top: 8%;
+  right: 12%;
+  background: radial-gradient(circle, rgba(35, 35, 35, 0.10) 0%, rgba(120, 120, 120, 0.05) 60%, transparent 100%);
+  animation-delay: -4s;
+}
+
+.orb-mono-2 {
+  width: 48vw;
+  height: 48vw;
+  bottom: 5%;
+  left: 10%;
+  background: radial-gradient(circle, rgba(40, 40, 40, 0.09) 0%, rgba(180, 176, 168, 0.25) 65%, transparent 100%);
+  animation-delay: -12s;
+}
+
+@keyframes silkFloat {
+  0% {
+    transform: translate3d(0, 0, 0) scale(1) rotate(0deg);
+  }
+  50% {
+    transform: translate3d(3%, -4%, 0) scale(1.06) rotate(4deg);
+  }
+  100% {
+    transform: translate3d(-3%, 3%, 0) scale(0.97) rotate(-3deg);
+  }
+}
+
+/* 2. TEKSTUR FILM GRAIN ANALOG 35MM */
+.film-grain {
+  opacity: 0.038;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+}
+
+/* Gradasi Teks Baris Kedua Hero ("kenangan waktu nanti.") */
+.hero-italic-gradient {
+  background: linear-gradient(100deg, #7A756C 0%, #2B2B2B 52%, #8A847A 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* 3. SECTION MONOCHROME NOIR (UNTUK VIDEO REELS & FOOTER) */
+.monochrome-noir-section {
+  background:
+    radial-gradient(80% 60% at 85% 15%, rgba(255, 255, 255, 0.12) 0%, transparent 60%),
+    radial-gradient(70% 65% at 12% 85%, rgba(160, 160, 160, 0.10) 0%, transparent 65%),
+    linear-gradient(145deg, #111111 0%, #1C1C1C 48%, #0D0D0D 100%);
+}
+
+.monochrome-footer {
+  background:
+    radial-gradient(75% 50% at 50% 0%, rgba(255, 255, 255, 0.08) 0%, transparent 70%),
+    linear-gradient(180deg, #0D0D0D 0%, #151515 100%);
+}
+
+/* 4. INFINITE EDITORIAL MARQUEE */
+.marquee-track {
+  display: inline-flex;
+  animation: marqueeScroll 34s linear infinite;
+}
+
+@keyframes marqueeScroll {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+/* 5. SMOOTH SCROLL REVEAL ANIMATION */
+.reveal-on-scroll {
+  opacity: 0;
+  transform: translateY(28px);
+  filter: blur(4px);
+  transition:
+    opacity 0.85s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.85s cubic-bezier(0.16, 1, 0.3, 1),
+    filter 0.85s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: opacity, transform, filter;
+}
+
+.reveal-on-scroll.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+  filter: blur(0);
+}
+
+.reveal-delay-1 {
+  transition-delay: 0.1s;
+}
+.reveal-delay-2 {
+  transition-delay: 0.2s;
+}
+.reveal-delay-3 {
+  transition-delay: 0.3s;
 }
 
 /* Hilangkan scrollbar pada navigasi pill mobile & reels slider */
@@ -24,82 +161,74 @@ html {
   scrollbar-width: none;
 }
 
-/* Style Tombol Filter Pill di Section 01 / Still Stories */
+/* 6. FILTER PILLS & NAVBAR BUTTONS */
 .filter-pill {
-  background-color: #FFFFFF;
+  background-color: rgba(255, 255, 255, 0.75);
   color: var(--text-warmgray);
-  border: 1px solid var(--border-soft);
+  border: 1px solid rgba(22, 22, 22, 0.12);
+  backdrop-filter: blur(8px);
 }
 
 .filter-pill:hover {
   color: var(--text-charcoal);
-  border-color: #C9C5BD;
+  border-color: rgba(22, 22, 22, 0.35);
+  background-color: #FFFFFF;
 }
 
 .filter-pill.active {
-  background-color: #1A1A1A;
+  background-color: #161616;
   color: #FFFFFF;
-  border-color: #1A1A1A;
+  border-color: #161616;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12);
 }
 
-/* Style Tombol Kategori di Navbar Atas */
 .nav-cat-btn.active {
-  background-color: #1A1A1A;
+  background-color: #161616;
   color: #FFFFFF !important;
-  border-color: #1A1A1A;
+  border-color: #161616;
 }
 
-/* Masonry Card Item & Animasi Filter Halus */
+/* 7. MASONRY GALLERY CARDS & DARKROOM BW MODE */
 .masonry-item {
   break-inside: avoid;
-  margin-bottom: 1.25rem;
-  transform-origin: center;
-  animation: fadeScaleIn 0.45s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  margin-bottom: 1.5rem;
 }
 
-@media (min-width: 640px) {
-  .masonry-item {
-    margin-bottom: 1.5rem;
-  }
-}
-
-@keyframes fadeScaleIn {
-  0% {
-    opacity: 0;
-    transform: scale(0.96) translateY(8px);
-  }
-  100% {
-    opacity: 1;
-    transform: scale(1) translateY(0);
-  }
-}
-
-/* Hover Zoom Lembut pada Kartu Foto */
 .photo-card-img {
-  transition: transform 0.65s cubic-bezier(0.16, 1, 0.3, 1);
+  transition:
+    transform 0.75s cubic-bezier(0.16, 1, 0.3, 1),
+    filter 0.55s ease;
 }
 
 .group:hover .photo-card-img {
-  transform: scale(1.035);
+  transform: scale(1.04);
 }
 
-/* Thumbnail Lightbox Kiri Bawah */
+/* Jika Mode BW Diaktifkan oleh Pengunjung */
+body.bw-darkroom-mode .photo-card-img,
+body.bw-darkroom-mode #lightbox-main-img,
+body.bw-darkroom-mode .lb-thumb {
+  filter: grayscale(100%) contrast(1.06);
+}
+
+/* 8. THUMBNAIL LIGHTBOX KIRI BAWAH */
 .lb-thumb {
-  width: 52px;
-  height: 66px;
+  width: 54px;
+  height: 68px;
   object-fit: cover;
-  opacity: 0.45;
+  opacity: 0.42;
   border: 1.5px solid transparent;
-  transition: all 0.2s ease;
+  transition: all 0.22s ease;
   cursor: pointer;
   flex-shrink: 0;
 }
 
 .lb-thumb:hover {
-  opacity: 0.8;
+  opacity: 0.82;
 }
 
 .lb-thumb.active {
   opacity: 1;
   border-color: #FFFFFF;
+  transform: translateY(-2px);
 }
