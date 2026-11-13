@@ -1,6 +1,6 @@
 /**
  * ============================================================================
- * WAKTU NANTI — PORTFOLIO & GOOGLE SHEETS CMS ENGINE (PER-CLIENT GALLERY)
+ * WAKTU NANTI — PORTFOLIO & GOOGLE DRIVE FOLDER AUTO-SLIDER ENGINE
  * ============================================================================
  */
 
@@ -18,7 +18,8 @@ const FALLBACK_PHOTOS = [
     category: 'Wisuda',
     image: 'https://framerusercontent.com/images/4QgnUdMDiSDZJS65ZAaDyM9Wdc.png',
     gallery: ['https://framerusercontent.com/images/4QgnUdMDiSDZJS65ZAaDyM9Wdc.png'],
-    folderUrl: ''
+    folderId: null,
+    folderLoaded: true
   },
   {
     id: 'fallback-2',
@@ -26,7 +27,8 @@ const FALLBACK_PHOTOS = [
     category: 'Pre-wedding',
     image: 'https://framerusercontent.com/images/QUS52EcwCSRIpBDtsoAxEOX67wI.png',
     gallery: ['https://framerusercontent.com/images/QUS52EcwCSRIpBDtsoAxEOX67wI.png'],
-    folderUrl: ''
+    folderId: null,
+    folderLoaded: true
   },
   {
     id: 'fallback-3',
@@ -34,7 +36,8 @@ const FALLBACK_PHOTOS = [
     category: 'Group Shoot',
     image: 'https://framerusercontent.com/images/rsVtcDYb6JoDXQt1CESvcob2dnw.png',
     gallery: ['https://framerusercontent.com/images/rsVtcDYb6JoDXQt1CESvcob2dnw.png'],
-    folderUrl: ''
+    folderId: null,
+    folderLoaded: true
   }
 ];
 
@@ -71,20 +74,21 @@ let currentClientSession = null;
 let currentLightboxList = [];
 let currentLightboxIndex = 0;
 
+// Cache memori untuk daftar foto dari folder Google Drive
+const folderPhotoCache = new Map();
+
 /**
  * ============================================================================
- * UTILITAS PARSER GOOGLE DRIVE (FILE, FOLDER, & MULTI-PHOTO)
+ * 1. UTILITAS PARSER GOOGLE DRIVE (FILE & AUTO-SCAN ISI FOLDER)
  * ============================================================================
  */
 
-// Ekstrak ID Folder dari URL Google Drive Folder
 function extractDriveFolderId(url) {
   if (!url || typeof url !== 'string') return null;
   const match = url.match(/\/folders\/([a-zA-Z0-9_-]{15,})/);
   return match && match[1] ? match[1] : null;
 }
 
-// Ekstrak ID File dari URL Google Drive File
 function extractDriveFileId(url) {
   if (!url || typeof url !== 'string') return null;
   if (url.includes('/folders/')) return null;
@@ -98,7 +102,6 @@ function extractDriveFileId(url) {
   return null;
 }
 
-// Ubah 1 link gambar/Drive menjadi direct image URL
 function formatDriveImageUrl(url) {
   if (!url || typeof url !== 'string') return '';
   const trimmed = url.trim();
@@ -108,7 +111,6 @@ function formatDriveImageUrl(url) {
   if (fileId) {
     return `https://lh3.googleusercontent.com/d/${fileId}`;
   }
-  // Jika sudah berupa ID Google Drive murni (tanpa http)
   if (/^[a-zA-Z0-9_-]{25,45}$/.test(trimmed)) {
     return `https://lh3.googleusercontent.com/d/${trimmed}`;
   }
@@ -118,7 +120,6 @@ function formatDriveImageUrl(url) {
   return trimmed;
 }
 
-// Ubah link share video Google Drive menjadi /preview
 function formatDriveVideoPreviewUrl(url) {
   if (!url || typeof url !== 'string') return '';
   const trimmed = url.trim();
@@ -129,7 +130,162 @@ function formatDriveVideoPreviewUrl(url) {
   return trimmed;
 }
 
-// Ekstrak daftar semua foto & link folder dari teks sel (mendukung banyak link dipisah koma/enter)
+// Gabungkan daftar foto tanpa duplikat berdasarkan File ID Google Drive
+function mergeUniquePhotoUrls(existingList, newUrls) {
+  const result = [...existingList];
+  const seenKeys = new Set(
+    existingList.map((u) => extractDriveFileId(u) || u.trim())
+  );
+
+  newUrls.forEach((url) => {
+    if (!url) return;
+    const key = extractDriveFileId(url) || url.trim();
+    if (!seenKeys.has(key)) {
+      seenKeys.add(key);
+      result.push(url);
+    }
+  });
+
+  return result;
+}
+
+// Ekstrak seluruh ID file gambar dari halaman Embedded Folder Google Drive
+function extractImagesFromEmbeddedFolderHtml(htmlText) {
+  if (!htmlText || typeof htmlText !== 'string') return [];
+  const photos = [];
+  const seenIds = new Set();
+
+  try {
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(htmlText, 'text/html');
+    const entries = doc.querySelectorAll('.flip-entry');
+
+    entries.forEach((entry) => {
+      const rawId = entry.getAttribute('id') || '';
+      if (!rawId.startsWith('entry-')) return;
+
+      // Lewati jika item adalah sub-folder
+      const folderLink = entry.querySelector('a[href*="/folders/"]');
+      if (folderLink) return;
+
+      // Lewati jika nama file adalah video atau dokumen non-foto
+      const titleEl = entry.querySelector('.flip-entry-title');
+      const fileName = (titleEl ? titleEl.textContent : '').trim().toLowerCase();
+      if (/\.(mp4|mov|avi|mkv|pdf|zip|rar|doc|docx|xls|xlsx)$/i.test(fileName)) {
+        return;
+      }
+
+      const fileId = rawId.replace(/^entry-/, '').trim();
+      if (fileId && !seenIds.has(fileId)) {
+        seenIds.add(fileId);
+        photos.push(`https://lh3.googleusercontent.com/d/${fileId}`);
+      }
+    });
+  } catch (e) {
+    // Lanjut ke fallback regex jika DOMParser gagal
+  }
+
+  // Fallback Regex jika struktur class berubah
+  if (photos.length === 0) {
+    const regex = /id="entry-([a-zA-Z0-9_-]{15,})"/g;
+    let match;
+    while ((match = regex.exec(htmlText)) !== null) {
+      const fileId = match[1];
+      if (fileId && !seenIds.has(fileId)) {
+        seenIds.add(fileId);
+        photos.push(`https://lh3.googleusercontent.com/d/${fileId}`);
+      }
+    }
+  }
+
+  return photos;
+}
+
+// Ambil isi foto dari link Folder Google Drive publik secara otomatis
+async function fetchPhotosFromGoogleDriveFolder(folderId) {
+  if (!folderId) return [];
+
+  if (folderPhotoCache.has(folderId)) {
+    return folderPhotoCache.get(folderId);
+  }
+
+  try {
+    const cachedSession = sessionStorage.getItem(`wn_folder_${folderId}`);
+    if (cachedSession) {
+      const parsed = JSON.parse(cachedSession);
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        folderPhotoCache.set(folderId, parsed);
+        return parsed;
+      }
+    }
+  } catch (e) {}
+
+  const targetUrl = `https://drive.google.com/embeddedfolderview?id=${folderId}#list`;
+
+  const fetchViaProxy = async (proxyUrl, isJson = false) => {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 7000);
+    try {
+      const res = await fetch(proxyUrl, { signal: controller.signal });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const html = isJson ? (await res.json()).contents : await res.text();
+      const imgs = extractImagesFromEmbeddedFolderHtml(html);
+      if (imgs.length === 0) throw new Error('Folder kosong atau belum publik');
+      return imgs;
+    } finally {
+      clearTimeout(timer);
+    }
+  };
+
+  try {
+    const photos = await Promise.any([
+      fetchViaProxy(`https://api.allorigins.win/get?url=${encodeURIComponent(targetUrl)}`, true),
+      fetchViaProxy(`https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(targetUrl)}`, false),
+      fetchViaProxy(`https://corsproxy.io/?${encodeURIComponent(targetUrl)}`, false),
+      fetchViaProxy(`https://api.allorigins.win/raw?url=${encodeURIComponent(targetUrl)}`, false)
+    ]);
+
+    if (photos && photos.length > 0) {
+      folderPhotoCache.set(folderId, photos);
+      try {
+        sessionStorage.setItem(`wn_folder_${folderId}`, JSON.stringify(photos));
+      } catch (e) {}
+      return photos;
+    }
+  } catch (err) {
+    console.warn(`Tidak dapat memuat daftar file untuk folder ${folderId}:`, err);
+  }
+
+  return [];
+}
+
+// Preload semua folder klien di latar belakang agar saat diklik langsung muncul semua fotonya
+async function prefetchAllClientFolders() {
+  const sessionsWithFolder = allPhotos.filter((s) => s.folderId && !s.folderLoaded);
+  await Promise.allSettled(
+    sessionsWithFolder.map(async (session) => {
+      const folderImgs = await fetchPhotosFromGoogleDriveFolder(session.folderId);
+      if (folderImgs.length > 0) {
+        session.gallery = mergeUniquePhotoUrls(session.gallery, folderImgs);
+        if (!session.image && session.gallery.length > 0) {
+          session.image = session.gallery[0];
+        }
+        session.folderLoaded = true;
+
+        // Jika pengguna sedang membuka Lightbox klien ini, langsung perbarui tampilan thumbnail & slide
+        if (currentClientSession && currentClientSession.id === session.id) {
+          currentLightboxList = session.gallery;
+          updateLightboxView(false);
+        }
+      }
+    })
+  );
+
+  // Perbarui badge jumlah foto di kartu galeri depan
+  renderPhotoGallery();
+}
+
+// Parse sel Image & Drive_Link dari Google Sheets
 function parseGalleryCell(rawImageCell, rawDriveCell) {
   const combinedText = `${rawImageCell || ''}\n${rawDriveCell || ''}`;
   const tokens = combinedText
@@ -138,18 +294,15 @@ function parseGalleryCell(rawImageCell, rawDriveCell) {
     .filter(Boolean);
 
   const photoUrls = [];
-  let folderUrl = '';
+  let folderId = null;
 
   tokens.forEach((token) => {
-    const folderId = extractDriveFolderId(token);
-    if (folderId) {
-      if (!folderUrl) {
-        folderUrl = `https://drive.google.com/drive/folders/${folderId}`;
-      }
+    const detectedFolderId = extractDriveFolderId(token);
+    if (detectedFolderId) {
+      if (!folderId) folderId = detectedFolderId;
       return;
     }
 
-    // Abaikan link homepage kosong "https://drive.google.com/"
     const cleaned = token.replace(/\/+$/, '');
     if (
       cleaned === 'https://drive.google.com' ||
@@ -159,29 +312,26 @@ function parseGalleryCell(rawImageCell, rawDriveCell) {
       return;
     }
 
-    // Jika token adalah URL gambar valid atau File ID Google Drive
     if (token.startsWith('http') || /^[a-zA-Z0-9_-]{25,45}$/.test(token)) {
       const directImg = formatDriveImageUrl(token);
-      if (directImg && !photoUrls.includes(directImg)) {
+      if (directImg) {
         photoUrls.push(directImg);
       }
     }
   });
 
-  // Tentukan foto sampul depan (prioritaskan dari kolom Image, jika kosong ambil foto pertama dari daftar)
-  const primaryCover = formatDriveImageUrl((rawImageCell || '').split(/[\n,;|]+/)[0]) || photoUrls[0] || '';
-  if (primaryCover && !photoUrls.includes(primaryCover)) {
-    photoUrls.unshift(primaryCover);
-  }
+  const primaryCover =
+    formatDriveImageUrl((rawImageCell || '').split(/[\n,;|]+/)[0]) || photoUrls[0] || '';
+  const uniqueGallery = mergeUniquePhotoUrls(primaryCover ? [primaryCover] : [], photoUrls);
 
   return {
-    coverImage: primaryCover,
-    gallery: photoUrls,
-    folderUrl
+    coverImage: primaryCover || uniqueGallery[0] || '',
+    gallery: uniqueGallery,
+    folderId
   };
 }
 
-// Parser CSV tangguh
+// Parser CSV
 function parseCSV(csvText) {
   const rows = [];
   let currentRow = [];
@@ -246,7 +396,7 @@ function normalizeCategory(rawCat) {
 
 /**
  * ============================================================================
- * FETCH DATA DARI GOOGLE SHEETS CSV & KELOMPOKKAN PER KLIEN
+ * 2. FETCH DATA DARI GOOGLE SHEETS CSV
  * ============================================================================
  */
 async function loadPortfolioFromGoogleSheets() {
@@ -274,7 +424,6 @@ async function loadPortfolioFromGoogleSheets() {
         const rawCategory = item.category || item.kategori || 'Wisuda';
         const category = normalizeCategory(rawCategory);
 
-        // Gabungkan pembacaan kolom Image, Drive_Link, dan kolom tambahan (jika ada kolom ke-5 untuk daftar foto)
         const rawImage = item.image || item.foto || item.thumbnail || '';
         const rawDrive =
           item.drive_link ||
@@ -298,33 +447,29 @@ async function loadPortfolioFromGoogleSheets() {
           return;
         }
 
-        const { coverImage, gallery, folderUrl } = parseGalleryCell(
+        const { coverImage, gallery, folderId } = parseGalleryCell(
           rawImage,
           `${rawDrive}\n${extraPhotosCol}`
         );
 
-        if (!coverImage && gallery.length === 0) return;
+        if (!coverImage && gallery.length === 0 && !folderId) return;
 
-        // Jika ada beberapa baris dengan Title yang sama, gabungkan ke dalam 1 kartu sesi klien yang sama
         const sessionKey = `${category.toLowerCase()}__${title.toLowerCase()}`;
         if (clientSessionsMap.has(sessionKey)) {
           const existing = clientSessionsMap.get(sessionKey);
-          gallery.forEach((imgUrl) => {
-            if (!existing.gallery.includes(imgUrl)) {
-              existing.gallery.push(imgUrl);
-            }
-          });
-          if (!existing.folderUrl && folderUrl) {
-            existing.folderUrl = folderUrl;
+          existing.gallery = mergeUniquePhotoUrls(existing.gallery, gallery);
+          if (!existing.folderId && folderId) {
+            existing.folderId = folderId;
           }
         } else {
           clientSessionsMap.set(sessionKey, {
             id: `sheet-session-${index}`,
             title,
             category,
-            image: coverImage || gallery[0],
-            gallery: gallery.length > 0 ? gallery : [coverImage],
-            folderUrl
+            image: coverImage || gallery[0] || '',
+            gallery: gallery.length > 0 ? gallery : coverImage ? [coverImage] : [],
+            folderId: folderId || null,
+            folderLoaded: !folderId
           });
         }
       });
@@ -345,12 +490,14 @@ async function loadPortfolioFromGoogleSheets() {
     }
     renderPhotoGallery();
     renderVideoReels();
+    // Pindai otomatis seluruh isi folder Google Drive di latar belakang
+    prefetchAllClientFolders();
   }
 }
 
 /**
  * ============================================================================
- * RENDER GALERI FOTO MASONRY (1 KARTU = 1 KLIEN)
+ * 3. RENDER GALERI FOTO MASONRY
  * ============================================================================
  */
 function renderPhotoGallery() {
@@ -403,7 +550,6 @@ function renderPhotoGallery() {
       </div>
     `;
 
-    // PENTING: Saat diklik, buka Lightbox HANYA untuk sesi klien ini saja!
     figure.addEventListener('click', () => openClientLightbox(sessionItem));
     figure.addEventListener('keydown', (e) => {
       if (e.key === 'Enter' || e.key === ' ') {
@@ -436,14 +582,14 @@ function setCategoryFilter(category, shouldScroll = false) {
 
 /**
  * ============================================================================
- * LIGHTBOX SLIDER KHUSUS PER KLIEN
+ * 4. LIGHTBOX SLIDER KHUSUS PER KLIEN (OTOMATIS TAMPILKAN SEMUA FOTO FOLDER)
  * ============================================================================
  */
-function openClientLightbox(sessionItem) {
+async function openClientLightbox(sessionItem) {
   currentClientSession = sessionItem;
   currentLightboxList =
     sessionItem.gallery && sessionItem.gallery.length > 0
-      ? sessionItem.gallery
+      ? [...sessionItem.gallery]
       : [sessionItem.image];
   currentLightboxIndex = 0;
 
@@ -454,7 +600,29 @@ function openClientLightbox(sessionItem) {
   modal.classList.add('flex');
   document.body.style.overflow = 'hidden';
 
-  updateLightboxView();
+  updateLightboxView(true);
+
+  // Jika klien memiliki folder Google Drive yang belum selesai dimuat, muat sekarang juga
+  if (sessionItem.folderId && !sessionItem.folderLoaded) {
+    const driveInfo = document.getElementById('lightbox-drive-info');
+    if (driveInfo) {
+      driveInfo.textContent = 'Memuat seluruh foto dari album klien...';
+    }
+
+    const folderPhotos = await fetchPhotosFromGoogleDriveFolder(sessionItem.folderId);
+    if (folderPhotos.length > 0) {
+      sessionItem.gallery = mergeUniquePhotoUrls(sessionItem.gallery, folderPhotos);
+      sessionItem.folderLoaded = true;
+
+      if (currentClientSession && currentClientSession.id === sessionItem.id) {
+        currentLightboxList = [...sessionItem.gallery];
+        updateLightboxView(false);
+        renderPhotoGallery();
+      }
+    } else if (driveInfo) {
+      driveInfo.textContent = '';
+    }
+  }
 }
 
 function closeLightbox() {
@@ -470,16 +638,16 @@ function showPrevPhoto() {
   if (currentLightboxList.length <= 1) return;
   currentLightboxIndex =
     (currentLightboxIndex - 1 + currentLightboxList.length) % currentLightboxList.length;
-  updateLightboxView();
+  updateLightboxView(true);
 }
 
 function showNextPhoto() {
   if (currentLightboxList.length <= 1) return;
   currentLightboxIndex = (currentLightboxIndex + 1) % currentLightboxList.length;
-  updateLightboxView();
+  updateLightboxView(true);
 }
 
-function updateLightboxView() {
+function updateLightboxView(updateMainImage = true) {
   if (!currentClientSession || currentLightboxList.length === 0) return;
 
   const currentPhotoUrl = currentLightboxList[currentLightboxIndex];
@@ -492,61 +660,64 @@ function updateLightboxView() {
   const nextBtn = document.getElementById('lightbox-next');
 
   // 1. Update Gambar Utama
-  mainImg.style.opacity = '0.3';
-  mainImg.src = currentPhotoUrl;
-  mainImg.alt = `${currentClientSession.category} — ${currentClientSession.title} (${currentLightboxIndex + 1})`;
-  mainImg.onload = () => {
-    mainImg.style.opacity = '1';
-  };
+  if (updateMainImage && mainImg) {
+    mainImg.style.opacity = '0.35';
+    mainImg.src = currentPhotoUrl;
+    mainImg.alt = `${currentClientSession.category} — ${currentClientSession.title} (${currentLightboxIndex + 1})`;
+    mainImg.onload = () => {
+      mainImg.style.opacity = '1';
+    };
+  }
 
-  // Sembunyikan panah kiri/kanan jika foto klien hanya 1
+  // Tampilkan tombol panah Kiri/Kanan jika foto lebih dari 1
   const totalCount = currentLightboxList.length;
   if (prevBtn && nextBtn) {
     prevBtn.style.display = totalCount > 1 ? 'flex' : 'none';
     nextBtn.style.display = totalCount > 1 ? 'flex' : 'none';
   }
 
-  // 2. Metadata Kiri Atas: "[Kategori] — [Nama Klien/Sesi] — [Jumlah Foto Klien Ini]"
-  metaText.textContent = `${currentClientSession.category} — ${currentClientSession.title} — ${totalCount} Foto`;
-  counterText.textContent = `${currentLightboxIndex + 1} / ${totalCount}`;
-
-  // 3. Thumbnail Kiri Bawah (Hanya foto-foto milik klien ini saja)
-  thumbsContainer.innerHTML = '';
-  currentLightboxList.forEach((photoUrl, idx) => {
-    const thumb = document.createElement('img');
-    thumb.src = photoUrl;
-    thumb.alt = `${currentClientSession.title} - Foto ${idx + 1}`;
-    thumb.className = `lb-thumb ${idx === currentLightboxIndex ? 'active' : ''}`;
-    thumb.addEventListener('click', () => {
-      currentLightboxIndex = idx;
-      updateLightboxView();
-    });
-    thumbsContainer.appendChild(thumb);
-  });
-
-  const activeThumb = thumbsContainer.querySelector('.lb-thumb.active');
-  if (activeThumb) {
-    activeThumb.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+  // 2. Metadata Kiri Atas: "[Kategori] — [Nama Klien] — [Jumlah Foto]"
+  if (metaText) {
+    metaText.textContent = `${currentClientSession.category} — ${currentClientSession.title} — ${totalCount} Foto`;
+  }
+  if (counterText) {
+    counterText.textContent = `${currentLightboxIndex + 1} / ${totalCount}`;
   }
 
-  // 4. Link Folder Google Drive di Kiri Bawah
-  if (currentClientSession.folderUrl) {
-    driveInfo.innerHTML = `
-      <a href="${currentClientSession.folderUrl}" target="_blank" rel="noopener noreferrer" class="text-neutral-300 hover:text-white underline underline-offset-4 inline-flex items-center gap-1.5 transition-colors">
-        <span>Buka Folder Google Drive Lengkap (${currentClientSession.title})</span>
-        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" />
-        </svg>
-      </a>
-    `;
-  } else {
-    driveInfo.textContent = `${totalCount} foto dalam album ${currentClientSession.title}`;
+  // 3. Deretan Display Kecil (Thumbnail Bawah) — Tampilkan Semua Foto Klien
+  if (thumbsContainer) {
+    thumbsContainer.innerHTML = '';
+    currentLightboxList.forEach((photoUrl, idx) => {
+      const thumb = document.createElement('img');
+      thumb.src = photoUrl;
+      thumb.alt = `${currentClientSession.title} - Foto ${idx + 1}`;
+      thumb.loading = 'lazy';
+      thumb.className = `lb-thumb ${idx === currentLightboxIndex ? 'active' : ''}`;
+      thumb.addEventListener('click', () => {
+        currentLightboxIndex = idx;
+        updateLightboxView(true);
+      });
+      thumbsContainer.appendChild(thumb);
+    });
+
+    const activeThumb = thumbsContainer.querySelector('.lb-thumb.active');
+    if (activeThumb) {
+      activeThumb.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+    }
+  }
+
+  // 4. Hapus tombol Buka Google Drive (sesuai revisi)
+  if (driveInfo) {
+    driveInfo.textContent =
+      totalCount > 1
+        ? `Menampilkan foto ${currentLightboxIndex + 1} dari ${totalCount} — Klik foto kecil di atas atau geser untuk melihat lainnya`
+        : '';
   }
 }
 
 /**
  * ============================================================================
- * RENDER VIDEO REELS 9:16
+ * 5. RENDER VIDEO REELS 9:16
  * ============================================================================
  */
 function renderVideoReels() {
@@ -626,7 +797,7 @@ function renderVideoReels() {
 
 /**
  * ============================================================================
- * INISIALISASI EVENT LISTENERS
+ * 6. INISIALISASI EVENT LISTENERS
  * ============================================================================
  */
 document.addEventListener('DOMContentLoaded', () => {
@@ -675,6 +846,19 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('lightbox-back-gallery')?.addEventListener('click', closeLightbox);
   document.getElementById('lightbox-prev')?.addEventListener('click', showPrevPhoto);
   document.getElementById('lightbox-next')?.addEventListener('click', showNextPhoto);
+
+  // Dukungan scroll horizontal dengan roda mouse pada deretan thumbnail kecil bawah
+  const thumbsStrip = document.getElementById('lightbox-thumbnails');
+  thumbsStrip?.addEventListener(
+    'wheel',
+    (e) => {
+      if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
+        e.preventDefault();
+        thumbsStrip.scrollLeft += e.deltaY;
+      }
+    },
+    { passive: false }
+  );
 
   document.addEventListener('keydown', (e) => {
     const modal = document.getElementById('lightbox-modal');
