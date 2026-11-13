@@ -1,6 +1,6 @@
 /**
  * ============================================================================
- * WAKTU NANTI — FULL-WIDTH MASONRY, LANDSCAPE VIDEO & AUTO-THUMBNAIL ENGINE
+ * WAKTU NANTI — FULL-WIDTH MASONRY, HORIZONTAL VIDEO SLIDER & AUTO-THUMBNAIL
  * ============================================================================
  */
 
@@ -10,7 +10,6 @@ const CONFIG = {
     'https://docs.google.com/spreadsheets/d/e/2PACX-1vQi7IvaH0ii90aVrXLk5UT15xuBB20ODCbvbReExll7ZC27lCnxqUiNeq4jHG_l9BPZLSwVH-YDJrhC/pub?output=csv'
 };
 
-// Cadangan Foto & Sampul Video jika kategori belum memiliki foto
 const FALLBACK_COVERS = {
   Wedding: [
     'https://framerusercontent.com/images/QUS52EcwCSRIpBDtsoAxEOX67wI.png',
@@ -76,7 +75,7 @@ const FALLBACK_VIDEOS = [
   {
     id: 'vid-1',
     title: 'Wedding Film — Sepenggal Cerita Berdua',
-    category: 'Wedding',
+    category: 'Wedding Film',
     thumbnail: 'https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=1200&q=80',
     videoUrl: 'https://assets.mixkit.co/videos/preview/mixkit-bride-and-groom-walking-on-the-beach-42652-large.mp4',
     orientation: 'landscape'
@@ -84,7 +83,7 @@ const FALLBACK_VIDEOS = [
   {
     id: 'vid-2',
     title: 'Aftermovie Wisuda — Universitas Brawijaya',
-    category: 'Wisuda',
+    category: 'Wisuda Film',
     thumbnail: 'https://framerusercontent.com/images/4QgnUdMDiSDZJS65ZAaDyM9Wdc.png',
     videoUrl: 'https://assets.mixkit.co/videos/preview/mixkit-girl-in-neon-light-1232-large.mp4',
     orientation: 'landscape'
@@ -187,14 +186,31 @@ function formatDriveVideoPreviewUrl(url) {
   return trimmed;
 }
 
+// Label kategori yang rapi untuk pojok kiri atas kartu video
+function getVideoDisplayCategory(title) {
+  const t = (title || '').toLowerCase();
+  if (t.includes('kakang') || t.includes('mbakyu') || t.includes('duta') || t.includes('potrait') || t.includes('portrait')) {
+    return 'Portrait';
+  }
+  if (t.includes('birthday') || t.includes('documentation') || t.includes('dokumentasi') || t.includes('konser') || t.includes('event')) {
+    return 'Dokumentasi';
+  }
+  if (t.includes('wisuda') || t.includes('ub') || t.includes('umm') || t.includes('grad')) {
+    return 'Wisuda';
+  }
+  if (t.includes('group') || t.includes('grup')) {
+    return 'Group Shoot';
+  }
+  return 'Wedding Film';
+}
+
 // Pencari Foto Sampul Otomatis dari Galeri Anda (Jika Thumbnail Video Hitam/Kosong)
 function getSmartFallbackCoverForVideo(videoItem, videoIndex) {
   const titleWords = (videoItem.title || '')
     .toLowerCase()
     .split(/[^a-z0-9]+/)
-    .filter((w) => w.length >= 4 && !['video', 'film', 'reel', 'aftermovie', 'highlight', 'minute', 'documentation'].includes(w));
+    .filter((w) => w.length >= 4 && !['video', 'film', 'reel', 'aftermovie', 'highlight', 'minute', 'documentation', 'potrait', 'portrait'].includes(w));
 
-  // 1. Cari apakah ada album foto klien dengan nama yang mirip
   for (const session of allPhotos) {
     const sTitle = session.title.toLowerCase();
     if (titleWords.some((w) => sTitle.includes(w)) && session.gallery && session.gallery.length > 0) {
@@ -202,8 +218,7 @@ function getSmartFallbackCoverForVideo(videoItem, videoIndex) {
     }
   }
 
-  // 2. Tebak kategori dari judul video (misal Candra & Cinta -> Wedding, Birthday -> Dokumentasi)
-  const hint = `${videoItem.title} ${videoItem.category}`.toLowerCase();
+  const hint = `${videoItem.title}`.toLowerCase();
   let targetCat = 'Wedding';
   if (hint.includes('wisuda') || hint.includes('grad') || hint.includes('ub') || hint.includes('umm')) {
     targetCat = 'Wisuda';
@@ -211,11 +226,10 @@ function getSmartFallbackCoverForVideo(videoItem, videoIndex) {
     targetCat = 'Dokumentasi';
   } else if (hint.includes('group') || hint.includes('grup')) {
     targetCat = 'Group Shoot';
-  } else if (hint.includes('portrait') || hint.includes('kakang') || hint.includes('mbakyu') || hint.includes('duta')) {
+  } else if (hint.includes('portrait') || hint.includes('potrait') || hint.includes('kakang') || hint.includes('mbakyu') || hint.includes('duta')) {
     targetCat = 'Portrait';
   }
 
-  // 3. Ambil foto dari galeri Anda yang kategorinya sesuai (dengan indeks berbeda agar tidak kembar)
   const matchingSessions = allPhotos.filter(
     (s) => s.category.toLowerCase() === targetCat.toLowerCase()
   );
@@ -229,12 +243,10 @@ function getSmartFallbackCoverForVideo(videoItem, videoIndex) {
       }
     });
     if (allCatPhotos.length > 0) {
-      // Lompati indeks dengan kelipatan 3 agar setiap kartu video mendapat foto yang berbeda
       return allCatPhotos[(videoIndex * 3) % allCatPhotos.length];
     }
   }
 
-  // 4. Jika di kategori tersebut belum ada foto, ambil dari seluruh foto di galeri Anda
   const allAvailablePhotos = [];
   allPhotos.forEach((s) => {
     if (s.gallery && s.gallery.length > 0) {
@@ -245,13 +257,12 @@ function getSmartFallbackCoverForVideo(videoItem, videoIndex) {
     return allAvailablePhotos[(videoIndex * 4) % allAvailablePhotos.length];
   }
 
-  // 5. Fallback terakhir dari stok foto berkualitas tinggi
   const presetList = FALLBACK_COVERS[targetCat] || FALLBACK_COVERS.Wedding;
   return presetList[videoIndex % presetList.length];
 }
 
-// Sensor Pendeteksi apakah Thumbnail Video Google Drive Berwarna Hitam Pekat (Fade-in 00:00)
-function verifyAndFixBlackThumbnail(imgElement, primaryUrl, videoId, fallbackCoverUrl) {
+// Sensor Pendeteksi Orientasi Asli Video & Pengecek Frame Hitam (00:00 Fade-In)
+function verifyAndFixBlackThumbnail(cardEl, badgeEl, imgElement, primaryUrl, videoId, fallbackCoverUrl, hasExplicitPortraitTitle) {
   let triedAltDriveThumb = false;
 
   const applyFallback = () => {
@@ -260,7 +271,6 @@ function verifyAndFixBlackThumbnail(imgElement, primaryUrl, videoId, fallbackCov
     }
   };
 
-  // Jika URL gambar gagal dimuat (403/404), coba endpoint thumbnail Google Drive lalu fallback ke foto galeri
   imgElement.onerror = () => {
     if (!triedAltDriveThumb && videoId) {
       triedAltDriveThumb = true;
@@ -270,10 +280,23 @@ function verifyAndFixBlackThumbnail(imgElement, primaryUrl, videoId, fallbackCov
     }
   };
 
-  // Uji kecerahan piksel gambar di latar belakang menggunakan Canvas 16x16
   const probe = new Image();
   probe.crossOrigin = 'anonymous';
   probe.onload = () => {
+    // 1. Cek dimensi asli thumbnail video dari Google Drive (Landscape vs Portrait)
+    if (probe.naturalWidth && probe.naturalHeight && !hasExplicitPortraitTitle) {
+      if (probe.naturalHeight > probe.naturalWidth * 1.15) {
+        cardEl.classList.remove('is-landscape');
+        cardEl.classList.add('is-portrait');
+        if (badgeEl) badgeEl.textContent = '9:16 REEL';
+      } else if (probe.naturalWidth >= probe.naturalHeight) {
+        cardEl.classList.remove('is-portrait');
+        cardEl.classList.add('is-landscape');
+        if (badgeEl) badgeEl.textContent = '16:9 CINEMA';
+      }
+    }
+
+    // 2. Cek apakah frame awal video berwarna hitam pekat
     try {
       const canvas = document.createElement('canvas');
       canvas.width = 16;
@@ -285,21 +308,16 @@ function verifyAndFixBlackThumbnail(imgElement, primaryUrl, videoId, fallbackCov
       let totalBrightness = 0;
       const pixelCount = data.length / 4;
       for (let i = 0; i < data.length; i += 4) {
-        // Rumus kecerahan mata manusia (Luminance)
         totalBrightness += 0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2];
       }
       const avgBrightness = totalBrightness / pixelCount;
 
-      // Jika rata-rata kecerahan di bawah 26 (layar hitam/gelap gulita), otomatis ganti dengan foto galeri!
       if (avgBrightness < 26) {
         applyFallback();
       }
-    } catch (e) {
-      // Jika CORS diblokir pada probe namun gambar asli muncul normal, biarkan saja
-    }
+    } catch (e) {}
   };
   probe.onerror = () => {
-    // Jika probe gagal karena file video tidak punya thumbnail di lh3, ganti ke foto galeri
     if (!triedAltDriveThumb) {
       applyFallback();
     }
@@ -502,18 +520,18 @@ async function loadPortfolioFromGoogleSheets() {
         const extraPhotosCol = item.photos || item.foto_lengkap || item.list_foto || '';
         const type = (item.type || item.tipe || '').toLowerCase();
 
-        // Baris Video
+        // Baris Video: Cek HANYA dari Title & Type (Bukan dari rawCategory agar tidak salah jadi Portrait semua)
         if (category === 'Video' || type.includes('video')) {
           if (!rawDrive && !rawImage) return;
 
-          const combinedHint = `${type} ${title} ${rawCategory}`.toLowerCase();
+          const titleAndTypeOnly = `${type} ${title}`.toLowerCase();
           const isPortraitVideo =
-            combinedHint.includes('portrait') ||
-            combinedHint.includes('potrait') ||
-            combinedHint.includes('9:16') ||
-            combinedHint.includes('916') ||
-            combinedHint.includes('vertical') ||
-            combinedHint.includes('reel');
+            titleAndTypeOnly.includes('portrait') ||
+            titleAndTypeOnly.includes('potrait') ||
+            titleAndTypeOnly.includes('9:16') ||
+            titleAndTypeOnly.includes('916') ||
+            titleAndTypeOnly.includes('vertical') ||
+            titleAndTypeOnly.includes('reel');
 
           const videoSource = rawDrive || rawImage;
           const videoFileId = extractDriveFileId(videoSource);
@@ -522,14 +540,12 @@ async function loadPortfolioFromGoogleSheets() {
           parsedVideos.push({
             id: `sheet-vid-${index}`,
             title,
-            category:
-              rawCategory && rawCategory.toLowerCase() !== 'video'
-                ? normalizeCategory(rawCategory, title)
-                : 'Wedding & Event Film',
+            category: getVideoDisplayCategory(title),
             thumbnail: thumbUrl,
             videoFileId,
             videoUrl: videoSource,
-            orientation: isPortraitVideo ? 'portrait' : 'landscape'
+            orientation: isPortraitVideo ? 'portrait' : 'landscape',
+            hasExplicitPortraitTitle: isPortraitVideo
           });
           return;
         }
@@ -807,7 +823,7 @@ function updateLightboxView(updateMainImage = true) {
 
 /**
  * ============================================================================
- * 6. RENDER VIDEO (LANDSCAPE 16:9 + DETEKTOR THUMBNAIL HITAM OTOMATIS)
+ * 6. RENDER VIDEO HORIZONTAL SLIDER (PC & HP)
  * ============================================================================
  */
 function renderVideoReels() {
@@ -822,14 +838,13 @@ function renderVideoReels() {
     const formatBadge = isPortrait ? '9:16 REEL' : '16:9 CINEMA';
 
     const card = document.createElement('div');
-    card.className = `video-card-item ${ratioClass} group border border-white/15 shadow-2xl`;
+    card.className = `video-card-item ${ratioClass} snap-start group border border-white/15 shadow-2xl`;
 
     const isGoogleDriveVideo =
       (vid.videoUrl && vid.videoUrl.includes('drive.google.com')) ||
       Boolean(vid.videoFileId);
     const previewUrl = formatDriveVideoPreviewUrl(vid.videoUrl);
 
-    // Siapkan foto sampul otomatis dari galeri Anda jika thumbnail video ternyata hitam pekat
     const smartFallbackCover = getSmartFallbackCoverForVideo(vid, idx);
     const initialThumb = vid.thumbnail || smartFallbackCover;
 
@@ -839,23 +854,24 @@ function renderVideoReels() {
           src="${initialThumb}"
           alt="${vid.title}"
           loading="lazy"
+          draggable="false"
           class="vid-thumb-img w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
         />
-        <div class="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-black/20 flex flex-col justify-between p-4 sm:p-5">
+        <div class="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-black/20 flex flex-col justify-between p-3.5 sm:p-5">
           <div class="flex items-center justify-between gap-2">
-            <span class="text-[10px] uppercase tracking-[0.2em] bg-white/15 backdrop-blur-md text-white px-3 py-1 rounded-full border border-white/20 truncate">
+            <span class="text-[9px] sm:text-[10px] uppercase tracking-[0.2em] bg-white/15 backdrop-blur-md text-white px-2.5 py-1 rounded-full border border-white/20 truncate">
               ${vid.category}
             </span>
-            <span class="text-[10px] text-white/80 uppercase tracking-widest shrink-0">${formatBadge}</span>
+            <span class="vid-format-badge text-[9px] sm:text-[10px] text-white/80 uppercase tracking-widest shrink-0">${formatBadge}</span>
           </div>
-          <div class="self-center my-auto w-13 h-13 sm:w-14 sm:h-14 rounded-full bg-white/20 hover:bg-white hover:text-charcoal backdrop-blur-md border border-white/40 flex items-center justify-center text-white transition-all transform group-hover:scale-110 shadow-lg">
-            <svg class="w-6 h-6 fill-current ml-0.5" viewBox="0 0 24 24">
+          <div class="self-center my-auto w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-white/20 hover:bg-white hover:text-charcoal backdrop-blur-md border border-white/40 flex items-center justify-center text-white transition-all transform group-hover:scale-110 shadow-lg">
+            <svg class="w-5 h-5 sm:w-6 sm:h-6 fill-current ml-0.5" viewBox="0 0 24 24">
               <path d="M8 5v14l11-7z" />
             </svg>
           </div>
           <div>
-            <h3 class="font-serif text-lg sm:text-2xl text-white leading-snug">${vid.title}</h3>
-            <p class="text-[11px] text-white/75 mt-0.5">Klik untuk memutar video</p>
+            <h3 class="font-serif text-base sm:text-2xl text-white leading-snug line-clamp-2">${vid.title}</h3>
+            <p class="text-[10px] sm:text-[11px] text-white/75 mt-0.5">Klik untuk memutar video</p>
           </div>
         </div>
       </div>
@@ -863,15 +879,26 @@ function renderVideoReels() {
     `;
 
     const thumbImgEl = card.querySelector('.vid-thumb-img');
+    const badgeEl = card.querySelector('.vid-format-badge');
     if (thumbImgEl && vid.thumbnail) {
-      // Jalankan sensor pengecek gambar hitam/gagal muat secara otomatis
-      verifyAndFixBlackThumbnail(thumbImgEl, vid.thumbnail, vid.videoFileId, smartFallbackCover);
+      verifyAndFixBlackThumbnail(
+        card,
+        badgeEl,
+        thumbImgEl,
+        vid.thumbnail,
+        vid.videoFileId,
+        smartFallbackCover,
+        Boolean(vid.hasExplicitPortraitTitle)
+      );
     }
 
     const coverLayer = card.querySelector('.video-cover-layer');
     const playerSlot = card.querySelector('.video-player-slot');
 
     coverLayer?.addEventListener('click', () => {
+      // Cegah klik tidak sengaja saat user sedang drag slider di PC
+      if (container.dataset.isDragging === 'true') return;
+
       coverLayer.classList.add('hidden');
       if (isGoogleDriveVideo) {
         playerSlot.innerHTML = `
@@ -902,7 +929,7 @@ function renderVideoReels() {
 
 /**
  * ============================================================================
- * 7. INISIALISASI EVENT LISTENERS
+ * 7. INISIALISASI EVENT LISTENERS (TERMASUK DRAG SLIDER VIDEO PC & HP)
  * ============================================================================
  */
 document.addEventListener('DOMContentLoaded', () => {
@@ -952,6 +979,51 @@ document.addEventListener('DOMContentLoaded', () => {
     bwToggleBtn.classList.toggle('bg-charcoal', isBw);
     bwToggleBtn.classList.toggle('text-white', isBw);
     bwToggleBtn.classList.toggle('bg-white/80', !isBw);
+  });
+
+  // Tombol Panah Geser Kiri/Kanan pada Slider Video (PC & HP)
+  const reelsContainer = document.getElementById('video-reels-container');
+  document.getElementById('reels-prev-btn')?.addEventListener('click', () => {
+    const step = window.innerWidth < 640 ? 320 : 650;
+    reelsContainer?.scrollBy({ left: -step, behavior: 'smooth' });
+  });
+  document.getElementById('reels-next-btn')?.addEventListener('click', () => {
+    const step = window.innerWidth < 640 ? 320 : 650;
+    reelsContainer?.scrollBy({ left: step, behavior: 'smooth' });
+  });
+
+  // Dukungan Mouse Drag ke Samping untuk Slider Video di PC
+  let isDown = false;
+  let startX = 0;
+  let scrollLeft = 0;
+
+  reelsContainer?.addEventListener('mousedown', (e) => {
+    isDown = true;
+    reelsContainer.dataset.isDragging = 'false';
+    startX = e.pageX - reelsContainer.offsetLeft;
+    scrollLeft = reelsContainer.scrollLeft;
+  });
+
+  reelsContainer?.addEventListener('mouseleave', () => {
+    isDown = false;
+  });
+
+  reelsContainer?.addEventListener('mouseup', () => {
+    isDown = false;
+    setTimeout(() => {
+      if (reelsContainer) reelsContainer.dataset.isDragging = 'false';
+    }, 50);
+  });
+
+  reelsContainer?.addEventListener('mousemove', (e) => {
+    if (!isDown) return;
+    const x = e.pageX - reelsContainer.offsetLeft;
+    const walk = (x - startX) * 1.4;
+    if (Math.abs(walk) > 10) {
+      reelsContainer.dataset.isDragging = 'true';
+      e.preventDefault();
+      reelsContainer.scrollLeft = scrollLeft - walk;
+    }
   });
 
   document.getElementById('back-to-top-btn')?.addEventListener('click', () => {
