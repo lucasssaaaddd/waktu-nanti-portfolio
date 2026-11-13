@@ -1,6 +1,6 @@
 /**
  * ============================================================================
- * WAKTU NANTI — PORTFOLIO & GOOGLE DRIVE FOLDER AUTO-SLIDER ENGINE
+ * WAKTU NANTI — EDITORIAL PORTFOLIO, SMOOTH REVEAL & AUTO-SLIDER ENGINE
  * ============================================================================
  */
 
@@ -62,6 +62,13 @@ const FALLBACK_VIDEOS = [
     category: 'Group Shoot',
     thumbnail: 'https://framerusercontent.com/images/rsVtcDYb6JoDXQt1CESvcob2dnw.png',
     videoUrl: 'https://assets.mixkit.co/videos/preview/mixkit-friends-laughing-together-in-nature-42802-large.mp4'
+  },
+  {
+    id: 'vid-4',
+    title: 'Intimate Session — Kayutangan Heritage',
+    category: 'Pre-wedding',
+    thumbnail: 'https://images.unsplash.com/photo-1511285560929-80b456fea0bc?auto=format&fit=crop&w=800&q=80',
+    videoUrl: 'https://assets.mixkit.co/videos/preview/mixkit-bride-and-groom-walking-on-the-beach-42652-large.mp4'
   }
 ];
 
@@ -74,15 +81,47 @@ let currentClientSession = null;
 let currentLightboxList = [];
 let currentLightboxIndex = 0;
 
-// Cache memori untuk daftar foto dari folder Google Drive
-const folderPhotoCache = new Map();
+// Observer untuk animasi Smooth Scroll Reveal
+let scrollRevealObserver = null;
 
 /**
  * ============================================================================
- * 1. UTILITAS PARSER GOOGLE DRIVE (FILE & AUTO-SCAN ISI FOLDER)
+ * 1. SMOOTH SCROLL REVEAL ENGINE (INTERSECTION OBSERVER)
  * ============================================================================
  */
+function initScrollReveal() {
+  if (!('IntersectionObserver' in window)) {
+    document.querySelectorAll('.reveal-on-scroll').forEach((el) => el.classList.add('is-visible'));
+    return;
+  }
 
+  if (!scrollRevealObserver) {
+    scrollRevealObserver = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('is-visible');
+            scrollRevealObserver.unobserve(entry.target);
+          }
+        });
+      },
+      {
+        threshold: 0.1,
+        rootMargin: '0px 0px -40px 0px'
+      }
+    );
+  }
+
+  document.querySelectorAll('.reveal-on-scroll:not(.is-visible)').forEach((el) => {
+    scrollRevealObserver.observe(el);
+  });
+}
+
+/**
+ * ============================================================================
+ * 2. UTILITAS PARSER GOOGLE DRIVE & CSV
+ * ============================================================================
+ */
 function extractDriveFolderId(url) {
   if (!url || typeof url !== 'string') return null;
   const match = url.match(/\/folders\/([a-zA-Z0-9_-]{15,})/);
@@ -130,12 +169,9 @@ function formatDriveVideoPreviewUrl(url) {
   return trimmed;
 }
 
-// Gabungkan daftar foto tanpa duplikat berdasarkan File ID Google Drive
 function mergeUniquePhotoUrls(existingList, newUrls) {
   const result = [...existingList];
-  const seenKeys = new Set(
-    existingList.map((u) => extractDriveFileId(u) || u.trim())
-  );
+  const seenKeys = new Set(existingList.map((u) => extractDriveFileId(u) || u.trim()));
 
   newUrls.forEach((url) => {
     if (!url) return;
@@ -149,143 +185,6 @@ function mergeUniquePhotoUrls(existingList, newUrls) {
   return result;
 }
 
-// Ekstrak seluruh ID file gambar dari halaman Embedded Folder Google Drive
-function extractImagesFromEmbeddedFolderHtml(htmlText) {
-  if (!htmlText || typeof htmlText !== 'string') return [];
-  const photos = [];
-  const seenIds = new Set();
-
-  try {
-    const parser = new DOMParser();
-    const doc = parser.parseFromString(htmlText, 'text/html');
-    const entries = doc.querySelectorAll('.flip-entry');
-
-    entries.forEach((entry) => {
-      const rawId = entry.getAttribute('id') || '';
-      if (!rawId.startsWith('entry-')) return;
-
-      // Lewati jika item adalah sub-folder
-      const folderLink = entry.querySelector('a[href*="/folders/"]');
-      if (folderLink) return;
-
-      // Lewati jika nama file adalah video atau dokumen non-foto
-      const titleEl = entry.querySelector('.flip-entry-title');
-      const fileName = (titleEl ? titleEl.textContent : '').trim().toLowerCase();
-      if (/\.(mp4|mov|avi|mkv|pdf|zip|rar|doc|docx|xls|xlsx)$/i.test(fileName)) {
-        return;
-      }
-
-      const fileId = rawId.replace(/^entry-/, '').trim();
-      if (fileId && !seenIds.has(fileId)) {
-        seenIds.add(fileId);
-        photos.push(`https://lh3.googleusercontent.com/d/${fileId}`);
-      }
-    });
-  } catch (e) {
-    // Lanjut ke fallback regex jika DOMParser gagal
-  }
-
-  // Fallback Regex jika struktur class berubah
-  if (photos.length === 0) {
-    const regex = /id="entry-([a-zA-Z0-9_-]{15,})"/g;
-    let match;
-    while ((match = regex.exec(htmlText)) !== null) {
-      const fileId = match[1];
-      if (fileId && !seenIds.has(fileId)) {
-        seenIds.add(fileId);
-        photos.push(`https://lh3.googleusercontent.com/d/${fileId}`);
-      }
-    }
-  }
-
-  return photos;
-}
-
-// Ambil isi foto dari link Folder Google Drive publik secara otomatis
-async function fetchPhotosFromGoogleDriveFolder(folderId) {
-  if (!folderId) return [];
-
-  if (folderPhotoCache.has(folderId)) {
-    return folderPhotoCache.get(folderId);
-  }
-
-  try {
-    const cachedSession = sessionStorage.getItem(`wn_folder_${folderId}`);
-    if (cachedSession) {
-      const parsed = JSON.parse(cachedSession);
-      if (Array.isArray(parsed) && parsed.length > 0) {
-        folderPhotoCache.set(folderId, parsed);
-        return parsed;
-      }
-    }
-  } catch (e) {}
-
-  const targetUrl = `https://drive.google.com/embeddedfolderview?id=${folderId}#list`;
-
-  const fetchViaProxy = async (proxyUrl, isJson = false) => {
-    const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), 7000);
-    try {
-      const res = await fetch(proxyUrl, { signal: controller.signal });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const html = isJson ? (await res.json()).contents : await res.text();
-      const imgs = extractImagesFromEmbeddedFolderHtml(html);
-      if (imgs.length === 0) throw new Error('Folder kosong atau belum publik');
-      return imgs;
-    } finally {
-      clearTimeout(timer);
-    }
-  };
-
-  try {
-    const photos = await Promise.any([
-      fetchViaProxy(`https://api.allorigins.win/get?url=${encodeURIComponent(targetUrl)}`, true),
-      fetchViaProxy(`https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(targetUrl)}`, false),
-      fetchViaProxy(`https://corsproxy.io/?${encodeURIComponent(targetUrl)}`, false),
-      fetchViaProxy(`https://api.allorigins.win/raw?url=${encodeURIComponent(targetUrl)}`, false)
-    ]);
-
-    if (photos && photos.length > 0) {
-      folderPhotoCache.set(folderId, photos);
-      try {
-        sessionStorage.setItem(`wn_folder_${folderId}`, JSON.stringify(photos));
-      } catch (e) {}
-      return photos;
-    }
-  } catch (err) {
-    console.warn(`Tidak dapat memuat daftar file untuk folder ${folderId}:`, err);
-  }
-
-  return [];
-}
-
-// Preload semua folder klien di latar belakang agar saat diklik langsung muncul semua fotonya
-async function prefetchAllClientFolders() {
-  const sessionsWithFolder = allPhotos.filter((s) => s.folderId && !s.folderLoaded);
-  await Promise.allSettled(
-    sessionsWithFolder.map(async (session) => {
-      const folderImgs = await fetchPhotosFromGoogleDriveFolder(session.folderId);
-      if (folderImgs.length > 0) {
-        session.gallery = mergeUniquePhotoUrls(session.gallery, folderImgs);
-        if (!session.image && session.gallery.length > 0) {
-          session.image = session.gallery[0];
-        }
-        session.folderLoaded = true;
-
-        // Jika pengguna sedang membuka Lightbox klien ini, langsung perbarui tampilan thumbnail & slide
-        if (currentClientSession && currentClientSession.id === session.id) {
-          currentLightboxList = session.gallery;
-          updateLightboxView(false);
-        }
-      }
-    })
-  );
-
-  // Perbarui badge jumlah foto di kartu galeri depan
-  renderPhotoGallery();
-}
-
-// Parse sel Image & Drive_Link dari Google Sheets
 function parseGalleryCell(rawImageCell, rawDriveCell) {
   const combinedText = `${rawImageCell || ''}\n${rawDriveCell || ''}`;
   const tokens = combinedText
@@ -331,7 +230,6 @@ function parseGalleryCell(rawImageCell, rawDriveCell) {
   };
 }
 
-// Parser CSV
 function parseCSV(csvText) {
   const rows = [];
   let currentRow = [];
@@ -396,7 +294,7 @@ function normalizeCategory(rawCat) {
 
 /**
  * ============================================================================
- * 2. FETCH DATA DARI GOOGLE SHEETS CSV
+ * 3. FETCH DATA DARI GOOGLE SHEETS CSV
  * ============================================================================
  */
 async function loadPortfolioFromGoogleSheets() {
@@ -420,7 +318,9 @@ async function loadPortfolioFromGoogleSheets() {
       const parsedVideos = [];
 
       records.forEach((item, index) => {
-        const title = (item.title || item.judul || item.lokasi || `Sesi Waktu Nanti #${index + 1}`).trim();
+        const title = (item.title || item.judul || item.lokasi || '').trim();
+        if (!title) return;
+
         const rawCategory = item.category || item.kategori || 'Wisuda';
         const category = normalizeCategory(rawCategory);
 
@@ -437,10 +337,11 @@ async function loadPortfolioFromGoogleSheets() {
         const type = (item.type || item.tipe || '').toLowerCase();
 
         if (category === 'Video Reels' || type === 'video') {
+          if (!rawDrive && !rawImage) return;
           parsedVideos.push({
             id: `sheet-vid-${index}`,
             title,
-            category: category === 'Video Reels' ? 'Motion Story' : category,
+            category: rawCategory || 'Motion Story',
             thumbnail: formatDriveImageUrl(rawImage) || FALLBACK_VIDEOS[0].thumbnail,
             videoUrl: rawDrive || rawImage
           });
@@ -452,15 +353,12 @@ async function loadPortfolioFromGoogleSheets() {
           `${rawDrive}\n${extraPhotosCol}`
         );
 
-        if (!coverImage && gallery.length === 0 && !folderId) return;
+        if (!coverImage && gallery.length === 0) return;
 
         const sessionKey = `${category.toLowerCase()}__${title.toLowerCase()}`;
         if (clientSessionsMap.has(sessionKey)) {
           const existing = clientSessionsMap.get(sessionKey);
           existing.gallery = mergeUniquePhotoUrls(existing.gallery, gallery);
-          if (!existing.folderId && folderId) {
-            existing.folderId = folderId;
-          }
         } else {
           clientSessionsMap.set(sessionKey, {
             id: `sheet-session-${index}`,
@@ -469,7 +367,7 @@ async function loadPortfolioFromGoogleSheets() {
             image: coverImage || gallery[0] || '',
             gallery: gallery.length > 0 ? gallery : coverImage ? [coverImage] : [],
             folderId: folderId || null,
-            folderLoaded: !folderId
+            folderLoaded: true
           });
         }
       });
@@ -490,14 +388,12 @@ async function loadPortfolioFromGoogleSheets() {
     }
     renderPhotoGallery();
     renderVideoReels();
-    // Pindai otomatis seluruh isi folder Google Drive di latar belakang
-    prefetchAllClientFolders();
   }
 }
 
 /**
  * ============================================================================
- * 3. RENDER GALERI FOTO MASONRY
+ * 4. RENDER GALERI FOTO MASONRY (FINE-ART EXHIBITION STYLE + SCROLL REVEAL)
  * ============================================================================
  */
 function renderPhotoGallery() {
@@ -518,17 +414,20 @@ function renderPhotoGallery() {
   }
   emptyState?.classList.add('hidden');
 
-  filtered.forEach((sessionItem) => {
+  filtered.forEach((sessionItem, idx) => {
     const photoCount = sessionItem.gallery ? sessionItem.gallery.length : 1;
+    const indexNumber = String(idx + 1).padStart(2, '0');
+
     const figure = document.createElement('figure');
     figure.className =
-      'masonry-item group relative overflow-hidden bg-neutral-200/60 cursor-pointer rounded-xs shadow-2xs hover:shadow-md transition-shadow';
+      'masonry-item reveal-on-scroll group relative bg-white/75 backdrop-blur-xs p-2 sm:p-3 border border-black/10 rounded-xs shadow-2xs hover:shadow-xl transition-all duration-500 cursor-pointer';
+    figure.style.transitionDelay = `${(idx % 4) * 75}ms`;
     figure.setAttribute('tabindex', '0');
     figure.setAttribute('role', 'button');
     figure.setAttribute('aria-label', `${sessionItem.category} - ${sessionItem.title}`);
 
     figure.innerHTML = `
-      <div class="relative overflow-hidden">
+      <div class="relative overflow-hidden bg-neutral-200">
         <img
           src="${sessionItem.image}"
           alt="${sessionItem.title}"
@@ -536,18 +435,30 @@ function renderPhotoGallery() {
           onerror="this.onerror=null;this.src='https://framerusercontent.com/images/4QgnUdMDiSDZJS65ZAaDyM9Wdc.png';"
           class="photo-card-img w-full h-auto object-cover block"
         />
-        ${
-          photoCount > 1
-            ? `<span class="absolute top-3 right-3 bg-black/60 backdrop-blur-xs text-white text-[10px] font-medium px-2.5 py-1 rounded-full">
-                ${photoCount} Foto
-              </span>`
-            : ''
-        }
-        <div class="absolute inset-0 bg-gradient-to-t from-black/65 via-black/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-4">
-          <span class="text-[10px] uppercase tracking-[0.18em] text-white/80 mb-0.5">${sessionItem.category}</span>
-          <h3 class="font-serif text-lg sm:text-xl text-white leading-snug">${sessionItem.title}</h3>
+        <span class="absolute top-3 right-3 bg-black/65 backdrop-blur-md text-white text-[10px] tracking-wider uppercase font-medium px-2.5 py-1 rounded-full border border-white/15">
+          ${photoCount} Foto
+        </span>
+
+        <!-- Hover Glass Badge -->
+        <div class="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+          <span class="bg-white/90 backdrop-blur-md text-charcoal text-[11px] font-medium tracking-wider uppercase px-4 py-2 rounded-full shadow-lg transform translate-y-2 group-hover:translate-y-0 transition-transform duration-300">
+            Lihat Album ↗
+          </span>
         </div>
       </div>
+
+      <!-- Fine-Art Exhibition Caption di Bawah Foto -->
+      <figcaption class="pt-3 pb-1 px-1 flex items-baseline justify-between gap-2 border-t border-black/[0.06] mt-2">
+        <div class="min-w-0">
+          <p class="text-[9px] sm:text-[10px] uppercase tracking-[0.2em] text-warmgray truncate">
+            ${sessionItem.category}
+          </p>
+          <h3 class="font-serif text-base sm:text-xl text-charcoal leading-snug truncate group-hover:italic transition-all">
+            ${sessionItem.title}
+          </h3>
+        </div>
+        <span class="font-mono text-[10px] text-warmgray/70 shrink-0">NO.${indexNumber}</span>
+      </figcaption>
     `;
 
     figure.addEventListener('click', () => openClientLightbox(sessionItem));
@@ -560,6 +471,9 @@ function renderPhotoGallery() {
 
     grid.appendChild(figure);
   });
+
+  // Aktifkan animasi Smooth Scroll Reveal pada kartu-kartu baru
+  initScrollReveal();
 }
 
 function setCategoryFilter(category, shouldScroll = false) {
@@ -582,10 +496,10 @@ function setCategoryFilter(category, shouldScroll = false) {
 
 /**
  * ============================================================================
- * 4. LIGHTBOX SLIDER KHUSUS PER KLIEN (OTOMATIS TAMPILKAN SEMUA FOTO FOLDER)
+ * 5. LIGHTBOX SLIDER KHUSUS PER KLIEN
  * ============================================================================
  */
-async function openClientLightbox(sessionItem) {
+function openClientLightbox(sessionItem) {
   currentClientSession = sessionItem;
   currentLightboxList =
     sessionItem.gallery && sessionItem.gallery.length > 0
@@ -601,28 +515,6 @@ async function openClientLightbox(sessionItem) {
   document.body.style.overflow = 'hidden';
 
   updateLightboxView(true);
-
-  // Jika klien memiliki folder Google Drive yang belum selesai dimuat, muat sekarang juga
-  if (sessionItem.folderId && !sessionItem.folderLoaded) {
-    const driveInfo = document.getElementById('lightbox-drive-info');
-    if (driveInfo) {
-      driveInfo.textContent = 'Memuat seluruh foto dari album klien...';
-    }
-
-    const folderPhotos = await fetchPhotosFromGoogleDriveFolder(sessionItem.folderId);
-    if (folderPhotos.length > 0) {
-      sessionItem.gallery = mergeUniquePhotoUrls(sessionItem.gallery, folderPhotos);
-      sessionItem.folderLoaded = true;
-
-      if (currentClientSession && currentClientSession.id === sessionItem.id) {
-        currentLightboxList = [...sessionItem.gallery];
-        updateLightboxView(false);
-        renderPhotoGallery();
-      }
-    } else if (driveInfo) {
-      driveInfo.textContent = '';
-    }
-  }
 }
 
 function closeLightbox() {
@@ -659,7 +551,6 @@ function updateLightboxView(updateMainImage = true) {
   const prevBtn = document.getElementById('lightbox-prev');
   const nextBtn = document.getElementById('lightbox-next');
 
-  // 1. Update Gambar Utama
   if (updateMainImage && mainImg) {
     mainImg.style.opacity = '0.35';
     mainImg.src = currentPhotoUrl;
@@ -669,14 +560,12 @@ function updateLightboxView(updateMainImage = true) {
     };
   }
 
-  // Tampilkan tombol panah Kiri/Kanan jika foto lebih dari 1
   const totalCount = currentLightboxList.length;
   if (prevBtn && nextBtn) {
     prevBtn.style.display = totalCount > 1 ? 'flex' : 'none';
     nextBtn.style.display = totalCount > 1 ? 'flex' : 'none';
   }
 
-  // 2. Metadata Kiri Atas: "[Kategori] — [Nama Klien] — [Jumlah Foto]"
   if (metaText) {
     metaText.textContent = `${currentClientSession.category} — ${currentClientSession.title} — ${totalCount} Foto`;
   }
@@ -684,7 +573,6 @@ function updateLightboxView(updateMainImage = true) {
     counterText.textContent = `${currentLightboxIndex + 1} / ${totalCount}`;
   }
 
-  // 3. Deretan Display Kecil (Thumbnail Bawah) — Tampilkan Semua Foto Klien
   if (thumbsContainer) {
     thumbsContainer.innerHTML = '';
     currentLightboxList.forEach((photoUrl, idx) => {
@@ -706,18 +594,17 @@ function updateLightboxView(updateMainImage = true) {
     }
   }
 
-  // 4. Hapus tombol Buka Google Drive (sesuai revisi)
   if (driveInfo) {
     driveInfo.textContent =
       totalCount > 1
-        ? `Menampilkan foto ${currentLightboxIndex + 1} dari ${totalCount} — Klik foto kecil di atas atau geser untuk melihat lainnya`
+        ? `Menampilkan foto ${currentLightboxIndex + 1} dari ${totalCount} — Geser atau klik foto kecil di atas`
         : '';
   }
 }
 
 /**
  * ============================================================================
- * 5. RENDER VIDEO REELS 9:16
+ * 6. RENDER VIDEO REELS 9:16
  * ============================================================================
  */
 function renderVideoReels() {
@@ -729,7 +616,7 @@ function renderVideoReels() {
   allVideos.forEach((vid) => {
     const card = document.createElement('div');
     card.className =
-      'relative shrink-0 w-[76vw] sm:w-[280px] lg:w-auto aspect-[9/16] bg-charcoal rounded-sm overflow-hidden snap-center group shadow-md';
+      'relative shrink-0 w-[76vw] sm:w-[280px] lg:w-auto aspect-[9/16] bg-neutral-900 rounded-xs overflow-hidden snap-center group border border-white/15 shadow-2xl';
 
     const isGoogleDriveVideo = vid.videoUrl && vid.videoUrl.includes('drive.google.com');
     const previewUrl = formatDriveVideoPreviewUrl(vid.videoUrl);
@@ -742,21 +629,21 @@ function renderVideoReels() {
           loading="lazy"
           class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
         />
-        <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-black/10 flex flex-col justify-between p-5">
+        <div class="absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-black/20 flex flex-col justify-between p-5">
           <div class="flex items-center justify-between">
-            <span class="text-[10px] uppercase tracking-[0.2em] bg-black/50 backdrop-blur-xs text-white px-3 py-1 rounded-full">
+            <span class="text-[10px] uppercase tracking-[0.2em] bg-white/15 backdrop-blur-md text-white px-3 py-1 rounded-full border border-white/20">
               ${vid.category}
             </span>
-            <span class="text-[10px] text-white/80 uppercase tracking-widest">9:16 Reel</span>
+            <span class="text-[10px] text-white/75 uppercase tracking-widest">9:16 Reel</span>
           </div>
-          <div class="self-center my-auto w-14 h-14 rounded-full bg-white/20 hover:bg-white/35 backdrop-blur-md border border-white/40 flex items-center justify-center text-white transition-transform transform group-hover:scale-110">
+          <div class="self-center my-auto w-14 h-14 rounded-full bg-white/20 hover:bg-white hover:text-charcoal backdrop-blur-md border border-white/40 flex items-center justify-center text-white transition-all transform group-hover:scale-110">
             <svg class="w-6 h-6 fill-current ml-0.5" viewBox="0 0 24 24">
               <path d="M8 5v14l11-7z" />
             </svg>
           </div>
           <div>
             <h3 class="font-serif text-xl text-white leading-snug">${vid.title}</h3>
-            <p class="text-[11px] text-white/70 mt-1">Klik untuk memutar video</p>
+            <p class="text-[11px] text-white/70 mt-1">Klik untuk memutar film</p>
           </div>
         </div>
       </div>
@@ -797,38 +684,57 @@ function renderVideoReels() {
 
 /**
  * ============================================================================
- * 6. INISIALISASI EVENT LISTENERS
+ * 7. INISIALISASI EVENT LISTENERS
  * ============================================================================
  */
 document.addEventListener('DOMContentLoaded', () => {
+  initScrollReveal();
   renderPhotoGallery();
   renderVideoReels();
   loadPortfolioFromGoogleSheets();
 
+  // Navigasi Kategori Navbar
   document.querySelectorAll('[data-nav-filter]').forEach((btn) => {
     btn.addEventListener('click', () => {
       setCategoryFilter(btn.getAttribute('data-nav-filter'), true);
     });
   });
 
+  // Navigasi ke Video Reels
   const scrollToVideoReels = () => {
     document.getElementById('motion-stories')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   };
   document.getElementById('nav-video-btn')?.addEventListener('click', scrollToVideoReels);
   document.getElementById('nav-video-btn-mobile')?.addEventListener('click', scrollToVideoReels);
 
+  // Klik Teks Kategori & Kartu Triptych di Hero
   document.querySelectorAll('[data-hero-filter]').forEach((btn) => {
     btn.addEventListener('click', () => {
       setCategoryFilter(btn.getAttribute('data-hero-filter'), true);
     });
   });
 
+  // Klik Filter Tab Pills di Galeri
   document.querySelectorAll('[data-filter]').forEach((btn) => {
     btn.addEventListener('click', () => {
       setCategoryFilter(btn.getAttribute('data-filter'), false);
     });
   });
 
+  // Toggle Mode BW (Black & White Darkroom)
+  const bwToggleBtn = document.getElementById('bw-mode-toggle');
+  const bwLabel = document.getElementById('bw-mode-label');
+  bwToggleBtn?.addEventListener('click', () => {
+    const isBw = document.body.classList.toggle('bw-darkroom-mode');
+    if (bwLabel) {
+      bwLabel.textContent = isBw ? 'Mode BW: On' : 'Mode BW: Off';
+    }
+    bwToggleBtn.classList.toggle('bg-charcoal', isBw);
+    bwToggleBtn.classList.toggle('text-white', isBw);
+    bwToggleBtn.classList.toggle('bg-white/80', !isBw);
+  });
+
+  // Slider Video Reels
   const reelsContainer = document.getElementById('video-reels-container');
   document.getElementById('reels-prev-btn')?.addEventListener('click', () => {
     reelsContainer?.scrollBy({ left: -300, behavior: 'smooth' });
@@ -837,17 +743,18 @@ document.addEventListener('DOMContentLoaded', () => {
     reelsContainer?.scrollBy({ left: 300, behavior: 'smooth' });
   });
 
+  // Back to Top
   document.getElementById('back-to-top-btn')?.addEventListener('click', () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   });
 
+  // Kontrol Lightbox
   document.getElementById('lightbox-close-btn')?.addEventListener('click', closeLightbox);
   document.getElementById('lightbox-brand-close')?.addEventListener('click', closeLightbox);
   document.getElementById('lightbox-back-gallery')?.addEventListener('click', closeLightbox);
   document.getElementById('lightbox-prev')?.addEventListener('click', showPrevPhoto);
   document.getElementById('lightbox-next')?.addEventListener('click', showNextPhoto);
 
-  // Dukungan scroll horizontal dengan roda mouse pada deretan thumbnail kecil bawah
   const thumbsStrip = document.getElementById('lightbox-thumbnails');
   thumbsStrip?.addEventListener(
     'wheel',
