@@ -1,5 +1,5 @@
 /* ==========================================================================
-   WAKTU NANTI — FULL-WIDTH MASONRY, SLIM POLAROID & LANDSCAPE CINEMA
+   WAKTU NANTI — FULL-WIDTH MASONRY & HORIZONTAL FILMSTRIP SLIDER (PC & HP)
    ========================================================================== */
 
 :root {
@@ -203,13 +203,13 @@ body {
 .masonry-col {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem; /* 8px di HP */
+  gap: 0.5rem;
   min-width: 0;
 }
 
 @media (min-width: 640px) {
   .masonry-col {
-    gap: 0.875rem; /* 14px di PC */
+    gap: 0.875rem;
   }
 }
 
@@ -223,24 +223,52 @@ body {
   transform: scale(1.035);
 }
 
-/* 9. KARTU VIDEO (DEFAULT LANDSCAPE 16:9 FULL, MENDUKUNG PORTRAIT 9:16) */
+/* 9. HORIZONTAL FILMSTRIP VIDEO CARDS (GESER KE SAMPING DI PC & HP) */
 .video-card-item {
   position: relative;
-  width: 100%;
-  border-radius: 2px;
+  flex-shrink: 0;
+  height: 230px; /* Tinggi seragam di HP */
+  border-radius: 3px;
   overflow: hidden;
   background-color: #0D0D0D;
+  transition: width 0.35s ease;
 }
 
+/* Kartu Landscape 16:9 di HP (lebar 84% layar agar kartu sebelahnya mengintip) */
 .video-card-item.is-landscape {
-  aspect-ratio: 16 / 9;
+  width: 84vw;
+  max-width: 410px;
 }
 
+/* Kartu Portrait 9:16 di HP */
 .video-card-item.is-portrait {
-  aspect-ratio: 9 / 16;
-  max-width: 320px;
-  margin-left: auto;
-  margin-right: auto;
+  width: 145px;
+}
+
+/* Ukuran Kartu Video di Tablet & PC */
+@media (min-width: 640px) {
+  .video-card-item {
+    height: 350px;
+  }
+  .video-card-item.is-landscape {
+    width: 622px;
+    max-width: none;
+  }
+  .video-card-item.is-portrait {
+    width: 205px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .video-card-item {
+    height: 380px;
+  }
+  .video-card-item.is-landscape {
+    width: 675px;
+  }
+  .video-card-item.is-portrait {
+    width: 220px;
+  }
 }
 
 /* Mode BW Darkroom */
