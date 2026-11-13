@@ -1,12 +1,12 @@
 /* ==========================================================================
-   WAKTU NANTI — WARM CREAM SILK & MONOCHROME NOIR EDITORIAL STYLESHEET
+   WAKTU NANTI — SCULPTURAL SILK GRADIENT, FROSTED LIGHTBOX & CINEMA STYLES
    ========================================================================== */
 
 :root {
-  --bg-cream: #F7F5F0;
+  --bg-cream: #F3EDE2;
   --text-charcoal: #161616;
-  --text-warmgray: #6E6A63;
-  --border-soft: #E2DFD7;
+  --text-warmgray: #5E5952;
+  --border-soft: #DCD5C9;
 }
 
 html {
@@ -14,58 +14,62 @@ html {
   background-color: var(--bg-cream);
 }
 
-/* 1. LAYER BACKGROUND MESH GRADIENT (WARM CREAM + MONOCHROME MIST) */
+/* 1. LAYER BACKGROUND GRADASI UTAMA (TERLIHAT JELAS & BERDIMENSI) */
 .ambient-bg {
   background:
-    radial-gradient(120% 90% at 15% 10%, #FAF8F5 0%, rgba(247, 245, 240, 0.85) 45%, transparent 100%),
-    radial-gradient(100% 90% at 88% 18%, #E6E2DA 0%, transparent 65%),
-    radial-gradient(90% 80% at 50% 55%, #EFECE4 0%, #F7F5F0 70%),
-    linear-gradient(160deg, #FBF9F5 0%, #EAE6DE 48%, #DFDDD7 100%);
+    radial-gradient(85% 65% at 12% 8%, #FFFDF9 0%, rgba(255, 253, 249, 0) 65%),
+    radial-gradient(80% 70% at 90% 15%, #D5C5B0 0%, rgba(213, 197, 176, 0) 68%),
+    radial-gradient(90% 75% at 20% 65%, #E3D6C4 0%, rgba(227, 214, 196, 0) 70%),
+    radial-gradient(75% 65% at 85% 80%, rgba(45, 43, 40, 0.16) 0%, transparent 70%),
+    linear-gradient(135deg, #FBF9F4 0%, #EFE6D8 38%, #DFD2C0 72%, #CFC2B0 100%);
   overflow: hidden;
 }
 
 .mesh-orb {
   position: absolute;
   border-radius: 9999px;
-  filter: blur(85px);
-  opacity: 0.65;
+  filter: blur(70px);
+  opacity: 0.85;
   will-change: transform;
-  animation: silkFloat 22s ease-in-out infinite alternate;
+  animation: silkFloat 18s ease-in-out infinite alternate;
 }
 
+/* Gelombang Cahaya Ivory & Champagne */
 .orb-cream-1 {
-  width: 58vw;
-  height: 58vw;
-  top: -12%;
-  left: -10%;
-  background: radial-gradient(circle, #FFFDF9 0%, #E8E1D3 65%, transparent 100%);
+  width: 55vw;
+  height: 55vw;
+  top: -15%;
+  left: -8%;
+  background: radial-gradient(circle, #FFFFFF 0%, #F5EBDD 55%, transparent 100%);
 }
 
-.orb-cream-2 {
-  width: 50vw;
-  height: 50vw;
-  top: 28%;
+/* Gelombang Warm Toasted Almond / Sand */
+.orb-sand-2 {
+  width: 52vw;
+  height: 52vw;
+  top: 18%;
   right: -12%;
-  background: radial-gradient(circle, #F5EFE4 0%, #DDD5C7 70%, transparent 100%);
-  animation-delay: -7s;
+  background: radial-gradient(circle, #CBB79E 0%, #DECDB8 60%, transparent 100%);
+  animation-delay: -5s;
 }
 
+/* Sentuhan Monochrome Charcoal Mist (Kombinasi BW Halus) */
 .orb-mono-1 {
-  width: 42vw;
-  height: 42vw;
-  top: 8%;
-  right: 12%;
-  background: radial-gradient(circle, rgba(35, 35, 35, 0.10) 0%, rgba(120, 120, 120, 0.05) 60%, transparent 100%);
-  animation-delay: -4s;
+  width: 44vw;
+  height: 44vw;
+  top: 4%;
+  right: 18%;
+  background: radial-gradient(circle, rgba(28, 28, 28, 0.14) 0%, rgba(90, 86, 80, 0.06) 60%, transparent 100%);
+  animation-delay: -3s;
 }
 
 .orb-mono-2 {
-  width: 48vw;
-  height: 48vw;
-  bottom: 5%;
-  left: 10%;
-  background: radial-gradient(circle, rgba(40, 40, 40, 0.09) 0%, rgba(180, 176, 168, 0.25) 65%, transparent 100%);
-  animation-delay: -12s;
+  width: 50vw;
+  height: 50vw;
+  bottom: -10%;
+  left: 12%;
+  background: radial-gradient(circle, rgba(32, 30, 28, 0.15) 0%, rgba(185, 172, 155, 0.35) 65%, transparent 100%);
+  animation-delay: -10s;
 }
 
 @keyframes silkFloat {
@@ -73,40 +77,52 @@ html {
     transform: translate3d(0, 0, 0) scale(1) rotate(0deg);
   }
   50% {
-    transform: translate3d(3%, -4%, 0) scale(1.06) rotate(4deg);
+    transform: translate3d(4%, -5%, 0) scale(1.08) rotate(5deg);
   }
   100% {
-    transform: translate3d(-3%, 3%, 0) scale(0.97) rotate(-3deg);
+    transform: translate3d(-4%, 4%, 0) scale(0.95) rotate(-4deg);
   }
 }
 
 /* 2. TEKSTUR FILM GRAIN ANALOG 35MM */
 .film-grain {
-  opacity: 0.038;
+  opacity: 0.042;
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
 }
 
 .hero-italic-gradient {
-  background: linear-gradient(100deg, #7A756C 0%, #2B2B2B 52%, #8A847A 100%);
+  background: linear-gradient(100deg, #6E665C 0%, #1F1E1C 50%, #7D7468 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
-/* 3. SECTION MONOCHROME NOIR (VIDEO REELS & FOOTER) */
+/* 3. LIGHTBOX FROSTED GLASS & GRADIENT BACKDROP (TIDAK NGEBLOK HITAM) */
+.lightbox-glass-backdrop {
+  background: radial-gradient(
+    circle at 50% 45%,
+    rgba(38, 35, 32, 0.68) 0%,
+    rgba(16, 15, 14, 0.84) 65%,
+    rgba(8, 8, 8, 0.92) 100%
+  );
+  backdrop-filter: blur(26px) saturate(130%);
+  -webkit-backdrop-filter: blur(26px) saturate(130%);
+}
+
+/* 4. SECTION MONOCHROME NOIR (VIDEO & FOOTER) */
 .monochrome-noir-section {
   background:
-    radial-gradient(80% 60% at 85% 15%, rgba(255, 255, 255, 0.12) 0%, transparent 60%),
-    radial-gradient(70% 65% at 12% 85%, rgba(160, 160, 160, 0.10) 0%, transparent 65%),
-    linear-gradient(145deg, #111111 0%, #1C1C1C 48%, #0D0D0D 100%);
+    radial-gradient(80% 60% at 85% 15%, rgba(255, 255, 255, 0.14) 0%, transparent 60%),
+    radial-gradient(70% 65% at 12% 85%, rgba(180, 170, 155, 0.12) 0%, transparent 65%),
+    linear-gradient(145deg, #121212 0%, #1F1E1C 48%, #0E0E0E 100%);
 }
 
 .monochrome-footer {
   background:
     radial-gradient(75% 50% at 50% 0%, rgba(255, 255, 255, 0.08) 0%, transparent 70%),
-    linear-gradient(180deg, #0D0D0D 0%, #151515 100%);
+    linear-gradient(180deg, #0E0E0E 0%, #161616 100%);
 }
 
-/* 4. INFINITE EDITORIAL MARQUEE */
+/* 5. INFINITE EDITORIAL MARQUEE */
 .marquee-track {
   display: inline-flex;
   animation: marqueeScroll 34s linear infinite;
@@ -121,7 +137,7 @@ html {
   }
 }
 
-/* 5. SMOOTH SCROLL REVEAL ANIMATION */
+/* 6. SMOOTH SCROLL REVEAL ANIMATION */
 .reveal-on-scroll {
   opacity: 0;
   transform: translateY(22px);
@@ -157,9 +173,9 @@ html {
   scrollbar-width: none;
 }
 
-/* 6. FILTER PILLS & NAVBAR BUTTONS */
+/* 7. FILTER PILLS & NAVBAR BUTTONS */
 .filter-pill {
-  background-color: rgba(255, 255, 255, 0.75);
+  background-color: rgba(255, 255, 255, 0.78);
   color: var(--text-warmgray);
   border: 1px solid rgba(22, 22, 22, 0.12);
   backdrop-filter: blur(8px);
@@ -184,18 +200,18 @@ html {
   border-color: #161616;
 }
 
-/* 7. MASONRY POLAROID CARDS — JARAK RAPAT & SEJAJAR RATA ATAS */
+/* 8. MASONRY POLAROID CARDS */
 .masonry-item {
   break-inside: avoid;
   display: inline-block;
   width: 100%;
   margin-top: 0 !important;
-  margin-bottom: 0.625rem; /* 10px di HP agar dempet rapi */
+  margin-bottom: 0.625rem;
 }
 
 @media (min-width: 640px) {
   .masonry-item {
-    margin-bottom: 1rem; /* 16px di Laptop/Tablet */
+    margin-bottom: 1rem;
   }
 }
 
@@ -216,12 +232,13 @@ body.bw-darkroom-mode .lb-thumb {
   filter: grayscale(100%) contrast(1.06);
 }
 
-/* 8. THUMBNAIL LIGHTBOX KIRI BAWAH */
+/* 9. THUMBNAIL LIGHTBOX KIRI BAWAH */
 .lb-thumb {
-  width: 52px;
-  height: 66px;
+  width: 48px;
+  height: 60px;
   object-fit: cover;
-  opacity: 0.42;
+  opacity: 0.45;
+  border-radius: 4px;
   border: 1.5px solid transparent;
   transition: all 0.22s ease;
   cursor: pointer;
@@ -229,11 +246,12 @@ body.bw-darkroom-mode .lb-thumb {
 }
 
 .lb-thumb:hover {
-  opacity: 0.82;
+  opacity: 0.85;
 }
 
 .lb-thumb.active {
   opacity: 1;
   border-color: #FFFFFF;
   transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
 }
