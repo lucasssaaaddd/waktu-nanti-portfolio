@@ -1,27 +1,30 @@
 /* ==========================================================================
-   WAKTU NANTI — SCULPTURAL SILK GRADIENT, FROSTED LIGHTBOX & CINEMA STYLES
+   WAKTU NANTI — FULL-WIDTH MASONRY, SLIM POLAROID & LANDSCAPE CINEMA
    ========================================================================== */
 
 :root {
-  --bg-cream: #F3EDE2;
+  --bg-cream: #F4EFE6;
   --text-charcoal: #161616;
-  --text-warmgray: #5E5952;
-  --border-soft: #DCD5C9;
+  --text-warmgray: #635E57;
 }
 
 html {
   scroll-behavior: smooth;
-  background-color: var(--bg-cream);
+  background-color: #EAE2D6;
 }
 
-/* 1. LAYER BACKGROUND GRADASI UTAMA (TERLIHAT JELAS & BERDIMENSI) */
+body {
+  background: transparent;
+}
+
+/* 1. BACKGROUND AWAL: GRADASI SILK CREAM, CHAMPAGNE & MONOCHROME */
 .ambient-bg {
   background:
-    radial-gradient(85% 65% at 12% 8%, #FFFDF9 0%, rgba(255, 253, 249, 0) 65%),
-    radial-gradient(80% 70% at 90% 15%, #D5C5B0 0%, rgba(213, 197, 176, 0) 68%),
-    radial-gradient(90% 75% at 20% 65%, #E3D6C4 0%, rgba(227, 214, 196, 0) 70%),
-    radial-gradient(75% 65% at 85% 80%, rgba(45, 43, 40, 0.16) 0%, transparent 70%),
-    linear-gradient(135deg, #FBF9F4 0%, #EFE6D8 38%, #DFD2C0 72%, #CFC2B0 100%);
+    radial-gradient(110% 85% at 12% 8%, #FFFFFF 0%, rgba(255, 252, 247, 0.75) 32%, transparent 65%),
+    radial-gradient(95% 80% at 88% 12%, #D5C8B5 0%, rgba(213, 200, 181, 0.45) 45%, transparent 75%),
+    radial-gradient(90% 85% at 18% 62%, rgba(35, 35, 35, 0.11) 0%, transparent 60%),
+    radial-gradient(100% 90% at 85% 78%, #CBBBA4 0%, transparent 65%),
+    linear-gradient(135deg, #FBF9F5 0%, #EDE5D8 38%, #DFD4C3 72%, #D2C5B3 100%);
   overflow: hidden;
 }
 
@@ -29,81 +32,77 @@ html {
   position: absolute;
   border-radius: 9999px;
   filter: blur(70px);
-  opacity: 0.85;
   will-change: transform;
-  animation: silkFloat 18s ease-in-out infinite alternate;
+  animation: silkWave 18s ease-in-out infinite alternate;
 }
 
-/* Gelombang Cahaya Ivory & Champagne */
-.orb-cream-1 {
+.orb-cream-light {
   width: 55vw;
   height: 55vw;
   top: -15%;
   left: -8%;
-  background: radial-gradient(circle, #FFFFFF 0%, #F5EBDD 55%, transparent 100%);
+  opacity: 0.85;
+  background: radial-gradient(circle, #FFFFFF 0%, #F7F2E9 55%, transparent 100%);
 }
 
-/* Gelombang Warm Toasted Almond / Sand */
-.orb-sand-2 {
+.orb-champagne-wave {
   width: 52vw;
   height: 52vw;
   top: 18%;
-  right: -12%;
-  background: radial-gradient(circle, #CBB79E 0%, #DECDB8 60%, transparent 100%);
+  right: -10%;
+  opacity: 0.75;
+  background: radial-gradient(circle, #D6C5AE 0%, #C2AE93 55%, transparent 100%);
   animation-delay: -5s;
 }
 
-/* Sentuhan Monochrome Charcoal Mist (Kombinasi BW Halus) */
-.orb-mono-1 {
-  width: 44vw;
-  height: 44vw;
-  top: 4%;
-  right: 18%;
-  background: radial-gradient(circle, rgba(28, 28, 28, 0.14) 0%, rgba(90, 86, 80, 0.06) 60%, transparent 100%);
-  animation-delay: -3s;
+.orb-mono-shadow-1 {
+  width: 46vw;
+  height: 46vw;
+  top: 32%;
+  left: 22%;
+  opacity: 0.45;
+  background: radial-gradient(circle, rgba(24, 24, 24, 0.22) 0%, rgba(90, 86, 80, 0.10) 55%, transparent 100%);
+  animation-delay: -9s;
 }
 
-.orb-mono-2 {
+.orb-mono-shadow-2 {
   width: 50vw;
   height: 50vw;
   bottom: -10%;
-  left: 12%;
-  background: radial-gradient(circle, rgba(32, 30, 28, 0.15) 0%, rgba(185, 172, 155, 0.35) 65%, transparent 100%);
-  animation-delay: -10s;
+  right: 15%;
+  opacity: 0.5;
+  background: radial-gradient(circle, rgba(20, 20, 20, 0.18) 0%, rgba(210, 198, 182, 0.35) 60%, transparent 100%);
+  animation-delay: -13s;
 }
 
-@keyframes silkFloat {
+@keyframes silkWave {
   0% {
     transform: translate3d(0, 0, 0) scale(1) rotate(0deg);
   }
   50% {
-    transform: translate3d(4%, -5%, 0) scale(1.08) rotate(5deg);
+    transform: translate3d(4%, -4%, 0) scale(1.08) rotate(5deg);
   }
   100% {
-    transform: translate3d(-4%, 4%, 0) scale(0.95) rotate(-4deg);
+    transform: translate3d(-3%, 4%, 0) scale(0.95) rotate(-4deg);
   }
 }
 
-/* 2. TEKSTUR FILM GRAIN ANALOG 35MM */
+/* 2. TEKSTUR FILM GRAIN ANALOG */
 .film-grain {
   opacity: 0.042;
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
 }
 
 .hero-italic-gradient {
-  background: linear-gradient(100deg, #6E665C 0%, #1F1E1C 50%, #7D7468 100%);
+  background: linear-gradient(100deg, #6E685F 0%, #1F1F1F 50%, #7D756B 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
-/* 3. LIGHTBOX FROSTED GLASS & GRADIENT BACKDROP (TIDAK NGEBLOK HITAM) */
-.lightbox-glass-backdrop {
-  background: radial-gradient(
-    circle at 50% 45%,
-    rgba(38, 35, 32, 0.68) 0%,
-    rgba(16, 15, 14, 0.84) 65%,
-    rgba(8, 8, 8, 0.92) 100%
-  );
+/* 3. LIGHTBOX FROSTED GLASS SETENGAH TRANSPARAN */
+.lightbox-glass-modal {
+  background:
+    radial-gradient(circle at 50% 45%, rgba(42, 40, 37, 0.55) 0%, rgba(12, 12, 12, 0.82) 100%);
   backdrop-filter: blur(26px) saturate(130%);
   -webkit-backdrop-filter: blur(26px) saturate(130%);
 }
@@ -112,17 +111,17 @@ html {
 .monochrome-noir-section {
   background:
     radial-gradient(80% 60% at 85% 15%, rgba(255, 255, 255, 0.14) 0%, transparent 60%),
-    radial-gradient(70% 65% at 12% 85%, rgba(180, 170, 155, 0.12) 0%, transparent 65%),
-    linear-gradient(145deg, #121212 0%, #1F1E1C 48%, #0E0E0E 100%);
+    radial-gradient(70% 65% at 12% 85%, rgba(160, 160, 160, 0.12) 0%, transparent 65%),
+    linear-gradient(145deg, #111111 0%, #1E1E1E 48%, #0D0D0D 100%);
 }
 
 .monochrome-footer {
   background:
-    radial-gradient(75% 50% at 50% 0%, rgba(255, 255, 255, 0.08) 0%, transparent 70%),
-    linear-gradient(180deg, #0E0E0E 0%, #161616 100%);
+    radial-gradient(75% 50% at 50% 0%, rgba(255, 255, 255, 0.09) 0%, transparent 70%),
+    linear-gradient(180deg, #0D0D0D 0%, #151515 100%);
 }
 
-/* 5. INFINITE EDITORIAL MARQUEE */
+/* 5. INFINITE MARQUEE */
 .marquee-track {
   display: inline-flex;
   animation: marqueeScroll 34s linear infinite;
@@ -137,15 +136,15 @@ html {
   }
 }
 
-/* 6. SMOOTH SCROLL REVEAL ANIMATION */
+/* 6. SMOOTH SCROLL REVEAL */
 .reveal-on-scroll {
   opacity: 0;
-  transform: translateY(22px);
+  transform: translateY(20px);
   filter: blur(3px);
   transition:
-    opacity 0.75s cubic-bezier(0.16, 1, 0.3, 1),
-    transform 0.75s cubic-bezier(0.16, 1, 0.3, 1),
-    filter 0.75s cubic-bezier(0.16, 1, 0.3, 1);
+    opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.7s cubic-bezier(0.16, 1, 0.3, 1),
+    filter 0.7s cubic-bezier(0.16, 1, 0.3, 1);
   will-change: opacity, transform, filter;
 }
 
@@ -200,18 +199,17 @@ html {
   border-color: #161616;
 }
 
-/* 8. MASONRY POLAROID CARDS */
-.masonry-item {
-  break-inside: avoid;
-  display: inline-block;
-  width: 100%;
-  margin-top: 0 !important;
-  margin-bottom: 0.625rem;
+/* 8. MASONRY COLUMNS & SLIM POLAROID CARDS */
+.masonry-col {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem; /* 8px di HP */
+  min-width: 0;
 }
 
 @media (min-width: 640px) {
-  .masonry-item {
-    margin-bottom: 1rem;
+  .masonry-col {
+    gap: 0.875rem; /* 14px di PC */
   }
 }
 
@@ -225,6 +223,26 @@ html {
   transform: scale(1.035);
 }
 
+/* 9. KARTU VIDEO (DEFAULT LANDSCAPE 16:9 FULL, MENDUKUNG PORTRAIT 9:16) */
+.video-card-item {
+  position: relative;
+  width: 100%;
+  border-radius: 2px;
+  overflow: hidden;
+  background-color: #0D0D0D;
+}
+
+.video-card-item.is-landscape {
+  aspect-ratio: 16 / 9;
+}
+
+.video-card-item.is-portrait {
+  aspect-ratio: 9 / 16;
+  max-width: 320px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
 /* Mode BW Darkroom */
 body.bw-darkroom-mode .photo-card-img,
 body.bw-darkroom-mode #lightbox-main-img,
@@ -232,14 +250,14 @@ body.bw-darkroom-mode .lb-thumb {
   filter: grayscale(100%) contrast(1.06);
 }
 
-/* 9. THUMBNAIL LIGHTBOX KIRI BAWAH */
+/* 10. THUMBNAIL LIGHTBOX */
 .lb-thumb {
-  width: 48px;
-  height: 60px;
+  width: 52px;
+  height: 66px;
   object-fit: cover;
   opacity: 0.45;
-  border-radius: 4px;
   border: 1.5px solid transparent;
+  border-radius: 2px;
   transition: all 0.22s ease;
   cursor: pointer;
   flex-shrink: 0;
